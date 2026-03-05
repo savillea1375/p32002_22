@@ -4,5 +4,15 @@ package com.example.p320_22.model;
  *  act in, produce, or direct a movie
  */
 public class Contributor {
-	
+	private int id;
+	private String name;
+
+	public Contributor(int id, String name) {
+		this.id = id;
+		this.name = name;
+	}
+
+	/** Getters */
+	public int getId() { return this.id; }
+	public String getName() { return this.name; }
 }
