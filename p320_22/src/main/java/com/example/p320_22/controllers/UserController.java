@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
 
 import com.example.p320_22.model.User;
 import com.example.p320_22.persistence.UserDAO;
@@ -24,7 +25,11 @@ public class UserController {
 	 * @return The requested user
 	 */
 	@GetMapping("/{email}")
-	public User getUser(@PathVariable String email) {
-		return dao.getByEmail(email);
+	public ResponseEntity<User> getUser(@PathVariable String email) {
+		User user = dao.getByEmail(email);
+		if (user == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.ok(user);
 	}
 }
