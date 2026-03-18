@@ -19,12 +19,12 @@ public class UserController {
 	}
 
 	/** 
-	 * Gets a user by the given username
+	 * Gets a user by the given email
 	 * 
 	 * @return The requested user
 	 */
-	@GetMapping("/{username}")
-	public User getUser(@PathVariable String username) {
-		return dao.getByUsername(username);
+	@GetMapping("/{email}")
+	public User getUser(@PathVariable String email) {
+		return dao.getByEmail(email);
 	}
 }

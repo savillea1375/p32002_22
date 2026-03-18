@@ -11,16 +11,16 @@ import com.example.p320_22.model.Collection;
 import com.example.p320_22.model.User;
 
 public class UserDAO {
-	/** Finds a user by their username
+	/** Finds a user by their email
 	 * 
-	 * @return The user with the matching username
+	 * @return The user with the matching email
 	 */
-	public User getByUsername(String username) {
-		String query = "SELECT * FROM users WHERE username = ?";
+	public User getByEmail(String email) {
+		String query = "SELECT * FROM users WHERE email = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
-			statement.setString(1, username);
+			statement.setString(1, email);
 
 			ResultSet rs = statement.executeQuery();
 
@@ -42,7 +42,7 @@ public class UserDAO {
 				return user;
 			}
 		} catch (SQLException e) {
-			System.err.println("getByUsername");
+			System.err.println("getByEmail");
 			e.printStackTrace();
 		}
 
