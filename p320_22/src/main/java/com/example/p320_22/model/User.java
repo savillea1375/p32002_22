@@ -25,29 +25,27 @@ public class User {
         this.collections = collections;
     }
 
-        /** Getters */
-        public Instant getCreationDate() { return this.creationDate; }
-        public String getEmail() { return this.email; }
-        public String getUsername() { return this.username; }
-        public String getPassword() { return this.password; }
-        public String getFirstName() { return this.firstName; }
-        public String getLastName() { return this.lastName; }
-        public Instant getLastAccessDate() { return this.lastAccessDate; }
-        public ArrayList<Collection> getCollections() { return this.collections; }
+	/** Getters */
+	public Instant getCreationDate() { return this.creationDate; }
+	public String getEmail() { return this.email; }
+	public String getUsername() { return this.username; }
+	public String getPassword() { return this.password; }
+	public String getFirstName() { return this.firstName; }
+	public String getLastName() { return this.lastName; }
+	public Instant getLastAccessDate() { return this.lastAccessDate; }
+	public ArrayList<Collection> getCollections() { return this.collections; }
 
-        public void setLastAccessDate(Instant lastAccessDate) {
-            this.lastAccessDate = lastAccessDate;
-        }
+	public void setLastAccessDate(Instant lastAccessDate) {
+		this.lastAccessDate = lastAccessDate;
+	}
 
-        /** Add a collection to the user's list of collections */
-        public void addCollection(Collection collection) {
-            this.collections.add(collection);
-        }
+	/** Add a collection to the user's list of collections */
+	public void addCollection(Collection collection) {
+		this.collections.add(collection);
+	}
 
-        /** Remove a collection from the user's list of collections */
-        public void removeCollection(Collection collection) {
-            this.collections.remove(collection);
-        }
-
-        
+	/** Remove a collection from the user's list of collections */
+	public void removeCollection(Collection collection) {
+		this.collections.remove(collection);
+	}
 }

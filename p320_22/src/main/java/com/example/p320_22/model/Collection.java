@@ -7,7 +7,7 @@ public class Collection {
 	private int id;
 	private String ownerUsername;
 	private String collectionName;
-	private ArrayList<Movie> movies; //List of movie ids in the collection
+	private ArrayList<Movie> movies; // List of movie ids in the collection
 
 	public Collection(int id, String ownerUsername, String collectionName) {
 		this.id = id;
