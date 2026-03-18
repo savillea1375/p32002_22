@@ -22,14 +22,32 @@ public class UserController {
 	/** 
 	 * Gets a user by the given email
 	 * 
-	 * @return The requested user
+	 * @return The requested user if it exists and an HTTP status code of 200, else
+	 * null and a status code of 404
 	 */
 	@GetMapping("/{email}")
-	public ResponseEntity<User> getUser(@PathVariable String email) {
+	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
 		User user = dao.getByEmail(email);
 		if (user == null) {
 			return ResponseEntity.notFound().build();
 		}
+		
+		return ResponseEntity.ok(user);
+	}
+
+	/** 
+	 * Gets a user by the given username
+	 * 
+	 * @return The requested user if it exists and an HTTP status code of 200, else
+	 * null and a status code of 404
+	 */
+	@GetMapping("/{username}")
+	public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
+		User user = dao.getByUsername(username);
+		if (user == null) {
+			return ResponseEntity.notFound().build();
+		}
+
 		return ResponseEntity.ok(user);
 	}
 }
