@@ -11,10 +11,10 @@ public class User {
     private String firstName;
     private String lastName;
     private Instant lastAccessDate;
-    private ArrayList<MovieCol> collections;
+    private ArrayList<Collection> collections;
 
     public User(Instant creationDate, String email, String username, String password, 
-                    String firstName, String lastName, Instant lastAccessDate, ArrayList<MovieCol> collections) {
+                    String firstName, String lastName, Instant lastAccessDate, ArrayList<Collection> collections) {
         this.creationDate = creationDate;
         this.email = email;
         this.username = username;
@@ -33,19 +33,19 @@ public class User {
         public String getFirstName() { return this.firstName; }
         public String getLastName() { return this.lastName; }
         public Instant getLastAccessDate() { return this.lastAccessDate; }
-        public ArrayList<MovieCol> getCollections() { return this.collections; }
+        public ArrayList<Collection> getCollections() { return this.collections; }
 
         public void setLastAccessDate(Instant lastAccessDate) {
             this.lastAccessDate = lastAccessDate;
         }
 
         /** Add a collection to the user's list of collections */
-        public void addCollection(MovieCol collection) {
+        public void addCollection(Collection collection) {
             this.collections.add(collection);
         }
 
         /** Remove a collection from the user's list of collections */
-        public void removeCollection(MovieCol collection) {
+        public void removeCollection(Collection collection) {
             this.collections.remove(collection);
         }
 

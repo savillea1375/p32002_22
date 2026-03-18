@@ -1,1 +1,4 @@
-userlogin.txt
+p320_22/target
+.vscode/
+.DS_Store
+.env

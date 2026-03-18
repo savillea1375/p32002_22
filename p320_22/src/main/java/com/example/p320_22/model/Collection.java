@@ -3,13 +3,13 @@ package com.example.p320_22.model;
 import java.util.ArrayList;
 
 /** A collection of movies owned by a user */
-public class MovieCol {
+public class Collection {
 	private int id;
 	private String ownerUsername;
 	private String collectionName;
 	private ArrayList<Movie> movies; //List of movie ids in the collection
 
-	public MovieCol(int id, String ownerUsername, String collectionName) {
+	public Collection(int id, String ownerUsername, String collectionName) {
 		this.id = id;
 		this.ownerUsername = ownerUsername;
 		this.collectionName = collectionName;
