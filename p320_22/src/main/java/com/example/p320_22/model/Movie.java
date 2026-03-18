@@ -8,19 +8,19 @@ public class Movie {
 	private Rating mpaaRating;
 	private int lenInMin;
 	private int directorId;
-	private int platformId;
+	private ArrayList<Platform> platforms;
 	private ArrayList<Genre> genres;
 	private ArrayList<Producer> producers;
 	private ArrayList<Actor> actors;
 
-	public Movie(int id, String title, Rating mpaaRating, int length, int directorId, int platformId, 
+	public Movie(int id, String title, Rating mpaaRating, int length, int directorId, ArrayList<Platform> platforms, 
 					ArrayList<Genre> genres, ArrayList<Producer> producers, ArrayList<Actor> actors) {
 		this.id = id;
 		this.title = title;
 		this.mpaaRating = mpaaRating;
 		this.lenInMin = length;
 		this.directorId = directorId;
-		this.platformId = platformId;
+		this.platforms = platforms;
 		this.genres = genres;
 		this.producers = producers;
 		this.actors = actors;
