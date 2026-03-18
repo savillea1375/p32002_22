@@ -32,7 +32,7 @@ public class Movie {
 	public Rating getRating() { return this.mpaaRating; }
 	public int getLenInMin() { return this.lenInMin; }
 	public int getDirectorId() { return this.directorId; }
-	public int getPlatformId() { return this.platformId; }
+	public ArrayList<Platform> getPlatforms() { return this.platforms; }
 	public ArrayList<Genre> getGenres() { return this.genres; }
 	public ArrayList<Producer> getProducers() { return this.producers; }
 	public ArrayList<Actor> getActors() { return this.actors; }
