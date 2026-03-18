@@ -4,6 +4,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.example.p320_22.model.User;
@@ -32,7 +33,7 @@ public class UserController {
 			return ResponseEntity.notFound().build();
 		}
 		
-		return ResponseEntity.ok(user);
+		return ResponseEntity.status(HttpStatus.OK).body(user);
 	}
 
 	/** 
@@ -48,6 +49,6 @@ public class UserController {
 			return ResponseEntity.notFound().build();
 		}
 
-		return ResponseEntity.ok(user);
+		return ResponseEntity.status(HttpStatus.OK).body(user);
 	}
 }

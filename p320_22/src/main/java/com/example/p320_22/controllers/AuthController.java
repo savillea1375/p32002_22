@@ -42,4 +42,26 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
+
+	/** 
+	 * Logs in a user with their username and password
+	 * 
+	 * @return Status code of 200 if successful, else 
+	 * status code of 401 otherwise
+	 */
+	@PostMapping("login")
+	public ResponseEntity<User> login(@RequestBody User req) {
+		try {
+			User user = userDAO.getByUsername(req.getUsername());
+
+			if (user == null || !user.getPassword().equals(req.getPassword())) {
+				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			}
+
+			userDAO.updateLastAccess(req.getUsername());
+			return ResponseEntity.status(HttpStatus.OK).body(user);
+		} catch (SQLException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
 }
