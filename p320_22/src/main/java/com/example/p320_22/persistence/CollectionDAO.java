@@ -13,9 +13,9 @@ public class CollectionDAO {
 	 * 
 	 * @return Status code 200 if collection exists, 404 if it doesn't exist
 	 */
-	// public Collection getCollection(int id) {
-		
-	// }
+	public Collection getCollection(int id) {
+		return null;
+	}
 	
 	/**
 	 * Creates a collection for a user

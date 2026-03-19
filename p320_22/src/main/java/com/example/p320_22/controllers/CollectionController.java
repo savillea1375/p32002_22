@@ -33,7 +33,7 @@ public class CollectionController {
 	 */
 	@GetMapping("/{id}")
 	public ResponseEntity<Collection> getCollection(@PathVariable int id) {
-
+		return null;
 	}
 
 	/** 
