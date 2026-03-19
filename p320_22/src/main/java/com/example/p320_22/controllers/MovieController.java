@@ -37,7 +37,7 @@ public class MovieController {
 
 	@GetMapping("/{id}")
 	public ResponseEntity<Movie> getMovie(@PathVariable int id) {
-		Movie movie = movieDAO.getMovie();
+		Movie movie = movieDAO.getMovie(id);
 		if (movie == null) {
 			return ResponseEntity.notFound().build();
 		}
