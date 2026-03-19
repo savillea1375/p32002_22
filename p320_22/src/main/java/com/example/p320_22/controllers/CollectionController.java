@@ -52,13 +52,60 @@ public class CollectionController {
 
 		String collectionName = body.get("name");
 
-		if (collectionName == "" || collectionName.isEmpty()) {
+		if (collectionName == null || collectionName.isEmpty()) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Must provide name of collection as key 'name'");
 		}
 
 		try {
 			collectiondDAO.create(username, collectionName);
 			return ResponseEntity.status(HttpStatus.CREATED).build();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Adds a single movie to the collection, given the movie's id and the collection's id
+	 * 
+	 * @return Status code 200 if movie was added, 404 if movie does not exist,
+	 * 409 if movie is already in collecton, 500 otherwise
+	 */
+	@PostMapping("/add")
+	public ResponseEntity<String> addToCollection(@RequestBody Map<String, Integer> body) {
+		int collectionID = body.get("collectionid");
+		int movieID = body.get("movieid");
+
+		try {
+			collectiondDAO.addToCollection(collectionID, movieID);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
+			if (e.getSQLState().equals("23505")) {
+				return ResponseEntity.status(HttpStatus.CONFLICT).body("Movie is already in collection");
+			} else if (e.getSQLState().equals("02000")) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Movie does not exist");
+			}
+
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Removes a single movie from a collection, given the movie's id and the collection's id
+	 * 
+	 * @return Status code 200 if movie was removed, 500 otherwise
+	 */
+	@PostMapping("/remove")
+	public ResponseEntity<String> removeFromCollection(@RequestBody Map<String, Integer> body) {
+		int collectionID = body.get("collectionid");
+		int movieID = body.get("movieid");
+
+		try {
+			collectiondDAO.removeFromCollection(collectionID, movieID);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
