@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.p320_22.model.User;
 import com.example.p320_22.persistence.UserDAO;
 
+import jakarta.servlet.http.HttpSession;
+
 /**
  * Handles creating a user account, logging in, and logging out
  */
@@ -31,9 +33,12 @@ public class AuthController {
 	 * else status code of 409
 	 */
 	@PostMapping("signup")
-	public ResponseEntity<User> signup(@RequestBody User user) {
+	public ResponseEntity<User> signup(@RequestBody User user, HttpSession session) {
 		try {
 			User createdUser = userDAO.createUser(user);
+
+			session.setAttribute("username", user.getUsername());
+
 			return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
 		} catch (SQLException e) {
 			if (e.getSQLState().equals("23505")) {
@@ -50,15 +55,17 @@ public class AuthController {
 	 * status code of 401 otherwise
 	 */
 	@PostMapping("login")
-	public ResponseEntity<User> login(@RequestBody User req) {
+	public ResponseEntity<User> login(@RequestBody User req, HttpSession session) {
 		try {
 			User user = userDAO.getByUsername(req.getUsername());
 
 			if (user == null || !user.getPassword().equals(req.getPassword())) {
-				return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+				return ResponseEntity.status(401).build();
 			}
 
-			userDAO.updateLastAccess(req.getUsername());
+			session.setAttribute("username", user.getUsername());
+
+			userDAO.updateLastAccess(user.getUsername());
 			return ResponseEntity.status(HttpStatus.OK).body(user);
 		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();

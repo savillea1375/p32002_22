@@ -118,9 +118,40 @@ public class UserDAO {
 		String query = "UPDATE users SET last_access_date = CURRENT_TIMESTAMP WHERE username = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
-			PreparedStatement stmt = connection.prepareStatement(query);
-			stmt.setString(1, username);
-			stmt.executeUpdate();
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			statement.executeUpdate();
+		}
+	}
+
+	/**
+	 * Follows the specified user if they exist in the database
+	 */
+	public void follow(String follower, String following) throws SQLException {
+		String query = "INSERT INTO follows (follower_username, following_username) VALUES (?, ?);";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, follower);
+			statement.setString(2, following);
+			statement.executeUpdate();
+		}
+	}
+
+	/**
+	 * Unfollows the specified user if they exist in the database and the
+	 * current user is following the other
+	 */
+	public boolean unfollow(String follower, String following) throws SQLException {
+		String query = "DELETE FROM follows WHERE following_username = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, following);
+			int res = statement.executeUpdate();
+
+			if (res > 0) return true;
+			else return false;
 		}
 	}
 }
