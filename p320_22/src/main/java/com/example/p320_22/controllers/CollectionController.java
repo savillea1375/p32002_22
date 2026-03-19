@@ -82,13 +82,13 @@ public class CollectionController {
 		int collectionID = body.get("collectionid");
 
 		try {
+			if (!collectiondDAO.isOwner(username, collectionID)) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
+			}
+
 			collectiondDAO.delete(username, collectionID);
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
-			if (e.getSQLState().equals("23000")) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Must own a collection to delete it");
-			}
-
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Make sure to include 'collectionid'");
 		}
@@ -101,11 +101,21 @@ public class CollectionController {
 	 * 409 if movie is already in collecton, 500 otherwise
 	 */
 	@PostMapping("/add")
-	public ResponseEntity<String> addToCollection(@RequestBody Map<String, Integer> body) {
+	public ResponseEntity<String> addToCollection(@RequestBody Map<String, Integer> body, HttpSession session) {
 		int collectionID = body.get("collectionid");
 		int movieID = body.get("movieid");
 
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
 		try {
+			if (!collectiondDAO.isOwner(username, collectionID)) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
+			}
+
 			collectiondDAO.addToCollection(collectionID, movieID);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
@@ -127,12 +137,22 @@ public class CollectionController {
 	 * @return Status code 200 if movie was removed, 500 otherwise
 	 */
 	@PostMapping("/remove")
-	public ResponseEntity<String> removeFromCollection(@RequestBody Map<String, Integer> body) {
+	public ResponseEntity<String> removeFromCollection(@RequestBody Map<String, Integer> body, HttpSession session) {
 		int collectionID = body.get("collectionid");
 		int movieID = body.get("movieid");
 
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You do not own this collection");
+		}
+		
 		try {
-			collectiondDAO.removeFromCollection(collectionID, movieID);
+			if (!collectiondDAO.isOwner(username, collectionID)) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+			}
+
+			collectiondDAO.removeFromCollection(username, collectionID, movieID);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {

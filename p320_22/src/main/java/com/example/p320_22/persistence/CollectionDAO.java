@@ -2,6 +2,7 @@ package com.example.p320_22.persistence;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
+import java.sql.ResultSet;
 import java.sql.SQLException;
 
 import com.example.p320_22.DatabaseConnection;
@@ -65,7 +66,7 @@ public class CollectionDAO {
 	/**
 	 * From a movie from the collection given the movie's id and collections id
 	 */
-	public void removeFromCollection(int collectionID, int movieID) throws SQLException {
+	public void removeFromCollection(String owner, int collectionID, int movieID) throws SQLException {
 		String query = "DELETE FROM storesmovieincollection WHERE collectionid = ? AND movieid = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
@@ -74,6 +75,25 @@ public class CollectionDAO {
 			statement.setInt(2, movieID);
 			
 			statement.executeUpdate();
+		}
+	}
+
+	/**
+	 * Checks if a user is the owner of a collection
+	 * 
+	 * @return true is user is the owner of the collection, false otherwise
+	 */
+	public boolean isOwner(String username, int collectionID) throws SQLException {
+		String query = "SELECT 1 FROM collection WHERE collectionid = ? AND username = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement stmt = connection.prepareStatement(query)) {
+
+			stmt.setInt(1, collectionID);
+			stmt.setString(2, username);
+
+			ResultSet rs = stmt.executeQuery();
+			return rs.next();
 		}
 	}
 }
