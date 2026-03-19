@@ -1,10 +1,12 @@
 package com.example.p320_22.controllers;
 
 import java.sql.SQLException;
+import java.util.ArrayList;
 import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -32,8 +34,31 @@ public class CollectionController {
 	 * @return The collection or null if it doesn't exist
 	 */
 	@GetMapping("/{id}")
-	public ResponseEntity<Collection> getCollection(@PathVariable int id) {
-		return null;
+	public ResponseEntity<Collection> getCollectionByID(@PathVariable int id) {
+		try {
+			Collection collection = collectiondDAO.getCollection(id);
+
+			return ResponseEntity.status(HttpStatus.OK).body(collection);
+		} catch (SQLException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Gets all of the collections owned by a specified user
+	 * 
+	 * @return The collection or null if it doesn't exist
+	 */
+	@GetMapping("/user/{username}")
+	public ResponseEntity<ArrayList<Collection>> getCollectionsByUsername(@PathVariable String username) {
+		try {
+			ArrayList<Collection> collections = collectiondDAO.getAllCollectionsFromUser(username);
+
+			return ResponseEntity.status(HttpStatus.OK).body(collections);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	/** 
@@ -43,11 +68,11 @@ public class CollectionController {
 	 * user is not logged, and 500 otherwise
 	 */
 	@PostMapping("")
-	public ResponseEntity<String> createCollection(@RequestBody Map<String, String> body, HttpSession session) {
+	public ResponseEntity<?> createCollection(@RequestBody Map<String, String> body, HttpSession session) {
 		String username = (String) session.getAttribute("username");
 
 		if (username == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in to make a collection");
 		}
 
 		String collectionName = body.get("name");
@@ -71,7 +96,7 @@ public class CollectionController {
 	 * @return Status code of 200 if the collection was created, 401 if the 
 	 * user is not logged, and 500 otherwise
 	 */
-	@PostMapping("delete")
+	@DeleteMapping("delete")
 	public ResponseEntity<String> deleteCollection(@RequestBody Map<String, Integer> body, HttpSession session) {
 		String username = (String) session.getAttribute("username");
 
@@ -144,12 +169,12 @@ public class CollectionController {
 		String username = (String) session.getAttribute("username");
 
 		if (username == null) {
-			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("You do not own this collection");
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in to remove a movie from a collection");
 		}
 		
 		try {
 			if (!collectiondDAO.isOwner(username, collectionID)) {
-				return ResponseEntity.status(HttpStatus.FORBIDDEN).build();
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
 			}
 
 			collectiondDAO.removeFromCollection(username, collectionID, movieID);

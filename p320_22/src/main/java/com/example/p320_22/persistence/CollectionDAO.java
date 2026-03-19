@@ -37,19 +37,18 @@ public class CollectionDAO {
 
 				Collection collection = new Collection(collectionID, owner, name);
 
-				query = "SELECT m.* FROM movie AS m JOIN storesmovieincollection AS smc on m.movieid = smc.movieid WHERE smc.collectionid = ?";
-				statement = connection.prepareStatement(query);
-				statement.setInt(1, collectionID);
+				String movieQuery = "SELECT m.* FROM movie AS m JOIN storesmovieincollection AS smc ON m.movieid = smc.movieid WHERE smc.collectionid = ?";
+				PreparedStatement movieStatement = connection.prepareStatement(movieQuery);
+				movieStatement.setInt(1, collectionID);
 
-				ResultSet movieSet = statement.executeQuery();
-				ArrayList<Movie> movies = new ArrayList<>();
+				ResultSet movieSet = movieStatement.executeQuery();
 
 				while (movieSet.next()) {
-					int movieId = rs.getInt("movieid");
-					String title = rs.getString("title");
-					Rating rating = Rating.fromString(rs.getString("mpaarating"));
-					int directorID = rs.getInt("contributorid");
-					int length = rs.getInt("length");
+					int movieId = movieSet.getInt("movieid");
+					String title = movieSet.getString("title");
+					Rating rating = Rating.fromString(movieSet.getString("mpaarating"));
+					int directorID = movieSet.getInt("contributorid");
+					int length = movieSet.getInt("length");
 					ArrayList<Platform> platforms = new ArrayList<>();
 					ArrayList<Genre> genres = new ArrayList<>();
 					ArrayList<Producer> producers = new ArrayList<>();
@@ -59,9 +58,10 @@ public class CollectionDAO {
 
 					Movie movie = new Movie(movieId, title, rating, length, directorID, platforms, genres, producers, actors);
 
-					movies.add(movie);
+					collection.addMovie(movie);
 				}
 
+				System.out.println(collection.getMovies().size());
 				return collection;
 			} else {
 				return null;
@@ -84,13 +84,11 @@ public class CollectionDAO {
 
 			ResultSet rs = statement.executeQuery();
 			
-			
 			while (rs.next()) {
 				int collectionID = rs.getInt("collectionid");
 				
 				Collection collection = getCollection(collectionID);
 				collections.add(collection);
-
 			}
 		}
 
