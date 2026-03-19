@@ -13,6 +13,8 @@ public class User {
     private Instant lastAccessDate;
     private ArrayList<Collection> collections;
 
+	public User() {};
+
     public User(Instant creationDate, String email, String username, String password, 
                     String firstName, String lastName, Instant lastAccessDate, ArrayList<Collection> collections) {
         this.creationDate = creationDate;
@@ -24,6 +26,10 @@ public class User {
         this.lastAccessDate = lastAccessDate;
         this.collections = collections;
     }
+
+	public User(String email, String username, String password, String firstName, String lastName) {
+		this(Instant.now(), email, username, password, firstName, lastName, Instant.now(), new ArrayList<>());
+	}
 
 	/** Getters */
 	public Instant getCreationDate() { return this.creationDate; }
