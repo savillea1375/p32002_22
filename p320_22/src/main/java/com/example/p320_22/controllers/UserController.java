@@ -59,7 +59,7 @@ public class UserController {
 	}
 
 	/**
-	 * Follows a user if a current user is logged in
+	 * Follows a user by their email if a current user is logged in
 	 *
 	 * @return 
 	 */

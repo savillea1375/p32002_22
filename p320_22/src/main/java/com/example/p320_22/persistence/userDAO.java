@@ -127,13 +127,13 @@ public class UserDAO {
 	/**
 	 * Follows the specified user if they exist in the database
 	 */
-	public void follow(String follower, String following) throws SQLException {
-		String query = "INSERT INTO follows (follower_username, following_username) VALUES (?, ?);";
+	public void follow(String follower, String followingEmail) throws SQLException {
+		String query = "INSERT INTO follows (follower_username, following_username) SELECT ?, username FROM users WHERE email = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
 			statement.setString(1, follower);
-			statement.setString(2, following);
+			statement.setString(2, followingEmail);
 			statement.executeUpdate();
 		}
 	}
@@ -142,12 +142,13 @@ public class UserDAO {
 	 * Unfollows the specified user if they exist in the database and the
 	 * current user is following the other
 	 */
-	public boolean unfollow(String follower, String following) throws SQLException {
-		String query = "DELETE FROM follows WHERE following_username = ?";
+	public boolean unfollow(String follower, String followingEmail) throws SQLException {
+		String query = "DELETE FROM follows WHERE following_username = (SELECT username FROM users WHERE email = ?) AND follower_username = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
-			statement.setString(1, following);
+			statement.setString(1, followingEmail);
+			statement.setString(2, follower);
 			int res = statement.executeUpdate();
 
 			if (res > 0) return true;
