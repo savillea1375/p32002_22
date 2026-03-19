@@ -61,7 +61,6 @@ public class CollectionDAO {
 					collection.addMovie(movie);
 				}
 
-				System.out.println(collection.getMovies().size());
 				return collection;
 			} else {
 				return null;
@@ -75,7 +74,7 @@ public class CollectionDAO {
 	 * @return Status code 200 if collection exists, 404 if it doesn't exist
 	 */
 	public ArrayList<Collection> getAllCollectionsFromUser(String username) throws SQLException {
-		String query = "SELECT collectionid FROM collection WHERE username = ?";
+		String query = "SELECT collectionid FROM collection WHERE username = ? ORDER BY name ASC";
 		ArrayList<Collection> collections = new ArrayList<>();
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
@@ -88,6 +87,7 @@ public class CollectionDAO {
 				int collectionID = rs.getInt("collectionid");
 				
 				Collection collection = getCollection(collectionID);
+
 				collections.add(collection);
 			}
 		}
