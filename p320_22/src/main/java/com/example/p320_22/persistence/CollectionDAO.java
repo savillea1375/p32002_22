@@ -33,6 +33,21 @@ public class CollectionDAO {
 	}
 
 	/**
+	 * Deletes a collection for a user if are the owner of it
+	 */
+	public void delete(String username, int collectionID) throws SQLException {
+		String query = "DELETE FROM collection WHERE collectionID = ? AND username = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setInt(1, collectionID);
+			statement.setString(2, username);
+
+			statement.executeUpdate();
+		}
+	}
+
+	/**
 	 * Adds a movie to the collection given the movie's id and collections id
 	 */
 	public void addToCollection(int collectionID, int movieID) throws SQLException {

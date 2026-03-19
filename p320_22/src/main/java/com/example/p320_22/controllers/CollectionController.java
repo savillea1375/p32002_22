@@ -65,6 +65,35 @@ public class CollectionController {
 		}
 	}
 
+	/** 
+	 * Creates a collection with the given name if the user is logged in
+	 * 
+	 * @return Status code of 200 if the collection was created, 401 if the 
+	 * user is not logged, and 500 otherwise
+	 */
+	@PostMapping("delete")
+	public ResponseEntity<String> deleteCollection(@RequestBody Map<String, Integer> body, HttpSession session) {
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+		}
+
+		int collectionID = body.get("collectionid");
+
+		try {
+			collectiondDAO.delete(username, collectionID);
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
+			if (e.getSQLState().equals("23000")) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("Must own a collection to delete it");
+			}
+
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Make sure to include 'collectionid'");
+		}
+	}
+
 	/**
 	 * Adds a single movie to the collection, given the movie's id and the collection's id
 	 * 
