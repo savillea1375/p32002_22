@@ -163,14 +163,35 @@ public class CollectionDAO {
 	public boolean isOwner(String username, int collectionID) throws SQLException {
 		String query = "SELECT * FROM collection WHERE collectionid = ? AND username = ?";
 
-		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement stmt = connection.prepareStatement(query)) {
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
 
-			stmt.setInt(1, collectionID);
-			stmt.setString(2, username);
+			statement.setInt(1, collectionID);
+			statement.setString(2, username);
 
-			ResultSet rs = stmt.executeQuery();
+			ResultSet rs = statement.executeQuery();
 			return rs.next();
+		}
+	}
+
+	/**
+	 * Renames a collection
+	 * 
+	 * @return true is successfully changed, false is collection not found
+	 */
+	public boolean rename(int collectionID, String newName) throws SQLException {
+		String query = "UPDATE collection SET name = ? WHERE collectionid = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+
+			statement.setString(1, newName);
+			statement.setInt(2, collectionID);
+
+			int res = statement.executeUpdate();
+			
+			if (res > 0) return true;
+			else return false;
 		}
 	}
 }

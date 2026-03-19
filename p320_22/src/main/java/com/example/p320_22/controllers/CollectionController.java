@@ -10,8 +10,10 @@ import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.p320_22.model.Collection;
@@ -180,6 +182,42 @@ public class CollectionController {
 			collectiondDAO.removeFromCollection(username, collectionID, movieID);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Renames a collection
+	 * 
+	 * @return 200 if successful, 404 if collection doesn't exist, 403 if user
+	 * doesn't own the collection, 401 if the user is not logged in, and 500 elsewise
+	 */
+	@PutMapping("/{collectionID}/rename")
+	public ResponseEntity<?> rename(@PathVariable int collectionID, @RequestBody Map<String, String> body, HttpSession session) {
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be logged in to remove a movie from a collection");
+		}
+
+		String newName = body.get("newName");
+		if (newName == null) {
+			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Must provide new name as key 'newName'");
+		}
+
+		try {
+			if (!collectiondDAO.isOwner(username, collectionID)) {
+				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
+			}
+
+			if (collectiondDAO.rename(collectionID, newName)) {
+				return ResponseEntity.status(HttpStatus.OK).build();
+			} else {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
+
 		} catch (SQLException e) {
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
