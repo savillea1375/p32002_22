@@ -12,6 +12,8 @@ import org.springframework.web.bind.annotation.RestController;
 import com.example.p320_22.model.User;
 import com.example.p320_22.persistence.UserDAO;
 
+import jakarta.servlet.http.Cookie;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
 /**
@@ -32,7 +34,7 @@ public class AuthController {
 	 * @return The user if they were created and a status code of 201,
 	 * else status code of 409
 	 */
-	@PostMapping("signup")
+	@PostMapping("/signup")
 	public ResponseEntity<User> signup(@RequestBody User user, HttpSession session) {
 		try {
 			User createdUser = userDAO.createUser(user);
@@ -54,7 +56,7 @@ public class AuthController {
 	 * @return Status code of 200 if successful, else 
 	 * status code of 401 otherwise
 	 */
-	@PostMapping("login")
+	@PostMapping("/login")
 	public ResponseEntity<User> login(@RequestBody User req, HttpSession session) {
 		try {
 			User user = userDAO.getByUsername(req.getUsername());
@@ -69,6 +71,28 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.OK).body(user);
 		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	/**
+	 * Logs a user out if they are logged in
+	 * 
+	 * @return Status code of 200 if successfully logged out, 
+	 */
+	@PostMapping("/logout")
+	public ResponseEntity<?> logout(HttpSession session, HttpServletResponse res) {
+		try {
+			session.invalidate();
+
+			Cookie cookie = new Cookie("JSESSIONID", null);
+			cookie.setPath("/");
+			cookie.setMaxAge(0);
+
+    		res.addCookie(cookie);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (IllegalStateException e) {
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 	}
 }
