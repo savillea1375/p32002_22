@@ -36,8 +36,12 @@ public class MovieController {
 	}
 
 	@GetMapping("/{id}")
-	public Movie getMovie(@PathVariable int id) {
-		return null;
+	public ResponseEntity<Movie> getMovie(@PathVariable int id) {
+		Movie movie = movieDAO.getMovie();
+		if (movie == null) {
+			return ResponseEntity.notFound().build();
+		}
+		return ResponseEntity.status(HttpStatus.OK).body(movie);
 	}
 
 	@PostMapping
