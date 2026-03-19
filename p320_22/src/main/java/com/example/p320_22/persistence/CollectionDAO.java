@@ -4,9 +4,16 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.ArrayList;
 
 import com.example.p320_22.DatabaseConnection;
+import com.example.p320_22.model.Actor;
 import com.example.p320_22.model.Collection;
+import com.example.p320_22.model.Genre;
+import com.example.p320_22.model.Movie;
+import com.example.p320_22.model.Platform;
+import com.example.p320_22.model.Producer;
+import com.example.p320_22.model.Rating;
 
 public class CollectionDAO {
 	/**
@@ -14,8 +21,80 @@ public class CollectionDAO {
 	 * 
 	 * @return Status code 200 if collection exists, 404 if it doesn't exist
 	 */
-	public Collection getCollection(int id) {
-		return null;
+	public Collection getCollection(int id) throws SQLException {
+		String query = "SELECT * FROM collection WHERE collectionid = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setInt(1, id);
+
+			ResultSet rs = statement.executeQuery();
+			
+			if (rs.next()) {
+				int collectionID = rs.getInt("collectionid");
+				String owner = rs.getString("username");
+				String name = rs.getString("name");
+
+				Collection collection = new Collection(collectionID, owner, name);
+
+				query = "SELECT m.* FROM movie AS m JOIN storesmovieincollection AS smc on m.movieid = smc.movieid WHERE smc.collectionid = ?";
+				statement = connection.prepareStatement(query);
+				statement.setInt(1, collectionID);
+
+				ResultSet movieSet = statement.executeQuery();
+				ArrayList<Movie> movies = new ArrayList<>();
+
+				while (movieSet.next()) {
+					int movieId = rs.getInt("movieid");
+					String title = rs.getString("title");
+					Rating rating = Rating.fromString(rs.getString("mpaarating"));
+					int directorID = rs.getInt("contributorid");
+					int length = rs.getInt("length");
+					ArrayList<Platform> platforms = new ArrayList<>();
+					ArrayList<Genre> genres = new ArrayList<>();
+					ArrayList<Producer> producers = new ArrayList<>();
+					ArrayList<Actor> actors = new ArrayList<>();
+
+					// TODO get platforms, genres, producers, and actors
+
+					Movie movie = new Movie(movieId, title, rating, length, directorID, platforms, genres, producers, actors);
+
+					movies.add(movie);
+				}
+
+				return collection;
+			} else {
+				return null;
+			}
+		}
+	}
+
+	/**
+	 * Fetches all the movies in a collection
+	 * 
+	 * @return Status code 200 if collection exists, 404 if it doesn't exist
+	 */
+	public ArrayList<Collection> getAllCollectionsFromUser(String username) throws SQLException {
+		String query = "SELECT collectionid FROM collection WHERE username = ?";
+		ArrayList<Collection> collections = new ArrayList<>();
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+
+			ResultSet rs = statement.executeQuery();
+			
+			
+			while (rs.next()) {
+				int collectionID = rs.getInt("collectionid");
+				
+				Collection collection = getCollection(collectionID);
+				collections.add(collection);
+
+			}
+		}
+
+		return collections;
 	}
 	
 	/**
@@ -84,7 +163,7 @@ public class CollectionDAO {
 	 * @return true is user is the owner of the collection, false otherwise
 	 */
 	public boolean isOwner(String username, int collectionID) throws SQLException {
-		String query = "SELECT 1 FROM collection WHERE collectionid = ? AND username = ?";
+		String query = "SELECT * FROM collection WHERE collectionid = ? AND username = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection();
 			PreparedStatement stmt = connection.prepareStatement(query)) {
