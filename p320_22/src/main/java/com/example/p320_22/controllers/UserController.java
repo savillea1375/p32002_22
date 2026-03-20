@@ -32,7 +32,7 @@ public class UserController {
 	 * @return The requested user if it exists and an HTTP status code of 200, else
 	 * null and a status code of 404
 	 */
-	@GetMapping("/{email}")
+	@GetMapping("/email/{email}")
 	public ResponseEntity<User> getUserByEmail(@PathVariable String email) {
 		User user = userDAO.getByEmail(email);
 		if (user == null) {
@@ -48,7 +48,7 @@ public class UserController {
 	 * @return The requested user if it exists and an HTTP status code of 200, else
 	 * null and a status code of 404
 	 */
-	@GetMapping("/{username}")
+	@GetMapping("/username/{username}")
 	public ResponseEntity<User> getUserByUsername(@PathVariable String username) {
 		User user = userDAO.getByUsername(username);
 		if (user == null) {
