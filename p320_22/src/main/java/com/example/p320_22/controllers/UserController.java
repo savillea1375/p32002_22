@@ -72,7 +72,11 @@ public class UserController {
 		}
 
 		try {
-			userDAO.follow(currentUser, target);
+			boolean res = userDAO.follow(currentUser, target);
+
+			if (!res) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
 		} catch (SQLException e) {
 			if (e.getSQLState().equals("23505")) {
 				return ResponseEntity.status(HttpStatus.CONFLICT).body("You are already following this user");
@@ -100,9 +104,12 @@ public class UserController {
 			boolean res = userDAO.unfollow(currentUser, target);
 
 			if (!res) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Cannot unfollow a user you are not following");
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
 			}
 		} catch (SQLException e) {
+			if (e.getSQLState().equals("23503")) {
+				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
+			}
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 

@@ -59,6 +59,7 @@ public class MovieController {
 			
 			return ResponseEntity.status(HttpStatus.OK).body(movies);
 		} catch (SQLException e) {
+			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
@@ -85,7 +86,7 @@ public class MovieController {
 
 		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be signed in to rate a movie");
 
-		if (rating < 0 || rating > 10) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rating must be a number 1-10");
+		if (rating < 1 || rating > 10) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rating must be a number 1-10");
 
 		try {
 			movieDAO.rateMovie(username, id, rating);

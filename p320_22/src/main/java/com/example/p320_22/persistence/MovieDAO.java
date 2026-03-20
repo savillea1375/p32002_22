@@ -103,11 +103,11 @@ public class MovieDAO {
 	}
     
     public Movie getMovie(int id) throws SQLException {
-        String query = "SELECT * FROM movie WHERE id = ?";
+        String query = "SELECT * FROM movie WHERE movieid = ?";
 
         try (Connection connection = DatabaseConnection.getConnection()) {
             PreparedStatement statement = connection.prepareStatement(query);
-            statement.setString(1, String.valueOf(id));
+            statement.setInt(1, id);
             ResultSet rs = statement.executeQuery();
             
             if(rs.next()) {
@@ -197,19 +197,28 @@ public class MovieDAO {
 
 		if (movieName != null && !movieName.isEmpty()) {
 			if (!isFirst) query.append("AND ");
-			else isFirst = false;
+			else {
+				isFirst = false;
+				query.append("WHERE ");
+			}
 			query.append("LOWER(m.title) = LOWER(?) ");
 		}
 
 		if (castMember != null && !castMember.isEmpty()) {
 			if (!isFirst) query.append("AND ");
-			else isFirst = false;
+			else {
+				isFirst = false;
+				query.append("WHERE ");
+			}
 			query.append("LOWER(c.name) = LOWER(?) ");
 		}
 
 		if (genre != null && !genre.isEmpty()) {
 			if (!isFirst) query.append("AND ");
-			else isFirst = false;
+			else {
+				isFirst = false;
+				query.append("WHERE ");
+			}
 			query.append("LOWER(g.genretitle) = LOWER(?) ");
 		}
 

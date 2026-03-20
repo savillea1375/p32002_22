@@ -132,14 +132,16 @@ public class UserDAO {
 	/**
 	 * Follows the specified user if they exist in the database
 	 */
-	public void follow(String follower, String followingEmail) throws SQLException {
+	public boolean follow(String follower, String followingEmail) throws SQLException {
 		String query = "INSERT INTO follows (follower_username, following_username) SELECT ?, username FROM users WHERE email = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
 			statement.setString(1, follower);
 			statement.setString(2, followingEmail);
-			statement.executeUpdate();
+			int res = statement.executeUpdate();
+
+			return res > 0;
 		}
 	}
 

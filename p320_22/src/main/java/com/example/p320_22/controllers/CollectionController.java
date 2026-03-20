@@ -24,11 +24,11 @@ import jakarta.servlet.http.HttpSession;
 @RestController
 @RequestMapping("/collections")
 public class CollectionController {
-	CollectionDAO collectiondDAO;
+	CollectionDAO collectionDAO;
 	MovieDAO movieDAO;
 
 	public CollectionController() {
-		collectiondDAO = new CollectionDAO();
+		collectionDAO = new CollectionDAO();
 		movieDAO = new MovieDAO();
 	}
 
@@ -40,7 +40,7 @@ public class CollectionController {
 	@GetMapping("/{id}")
 	public ResponseEntity<Collection> getCollectionByID(@PathVariable int id) {
 		try {
-			Collection collection = collectiondDAO.getCollection(id);
+			Collection collection = collectionDAO.getCollection(id);
 
 			return ResponseEntity.status(HttpStatus.OK).body(collection);
 		} catch (SQLException e) {
@@ -56,7 +56,7 @@ public class CollectionController {
 	@GetMapping("/user/{username}")
 	public ResponseEntity<ArrayList<Collection>> getCollectionsByUsername(@PathVariable String username) {
 		try {
-			ArrayList<Collection> collections = collectiondDAO.getAllCollectionsFromUser(username);
+			ArrayList<Collection> collections = collectionDAO.getAllCollectionsFromUser(username);
 
 			return ResponseEntity.status(HttpStatus.OK).body(collections);
 		} catch (SQLException e) {
@@ -86,7 +86,7 @@ public class CollectionController {
 		}
 
 		try {
-			collectiondDAO.create(username, collectionName);
+			collectionDAO.create(username, collectionName);
 			return ResponseEntity.status(HttpStatus.CREATED).build();
 		} catch (SQLException e) {
 			e.printStackTrace();
@@ -111,13 +111,14 @@ public class CollectionController {
 		int collectionID = body.get("collectionid");
 
 		try {
-			if (!collectiondDAO.isOwner(username, collectionID)) {
+			if (!collectionDAO.isOwner(username, collectionID)) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
 			}
 
-			collectiondDAO.delete(username, collectionID);
+			collectionDAO.delete(username, collectionID);
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
+			if (e.getSQLState().equals("23503")) return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Collection does not exist");
 			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body("Make sure to include 'collectionid'");
 		}
@@ -141,17 +142,17 @@ public class CollectionController {
 		}
 
 		try {
-			if (!collectiondDAO.isOwner(username, collectionID)) {
+			if (!collectionDAO.isOwner(username, collectionID)) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
 			}
 
-			collectiondDAO.addToCollection(collectionID, movieID);
+			collectionDAO.addToCollection(collectionID, movieID);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
 			if (e.getSQLState().equals("23505")) {
 				return ResponseEntity.status(HttpStatus.CONFLICT).body("Movie is already in collection");
-			} else if (e.getSQLState().equals("02000")) {
+			} else if (e.getSQLState().equals("23503")) {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("Movie does not exist");
 			}
 
@@ -177,11 +178,11 @@ public class CollectionController {
 		}
 		
 		try {
-			if (!collectiondDAO.isOwner(username, collectionID)) {
+			if (!collectionDAO.isOwner(username, collectionID)) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
 			}
 
-			collectiondDAO.removeFromCollection(username, collectionID, movieID);
+			collectionDAO.removeFromCollection(username, collectionID, movieID);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
@@ -210,11 +211,11 @@ public class CollectionController {
 		}
 
 		try {
-			if (!collectiondDAO.isOwner(username, collectionID)) {
+			if (!collectionDAO.isOwner(username, collectionID)) {
 				return ResponseEntity.status(HttpStatus.FORBIDDEN).body("You do not own this collection");
 			}
 
-			if (collectiondDAO.rename(collectionID, newName)) {
+			if (collectionDAO.rename(collectionID, newName)) {
 				return ResponseEntity.status(HttpStatus.OK).build();
 			} else {
 				return ResponseEntity.status(HttpStatus.NOT_FOUND).build();
