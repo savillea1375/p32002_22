@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.p320_22.model.Collection;
 import com.example.p320_22.persistence.CollectionDAO;
+import com.example.p320_22.persistence.MovieDAO;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -24,9 +25,11 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/collections")
 public class CollectionController {
 	CollectionDAO collectiondDAO;
+	MovieDAO movieDAO;
 
 	public CollectionController() {
 		collectiondDAO = new CollectionDAO();
+		movieDAO = new MovieDAO();
 	}
 
 	/**
@@ -219,6 +222,21 @@ public class CollectionController {
 
 		} catch (SQLException e) {
 			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@PostMapping("watch/{id}")
+	public ResponseEntity<String> watchMovie(@PathVariable int id, HttpSession session) {
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be signed in to watch a collection");
+
+		try {
+			movieDAO.watchCollection(username, id);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
