@@ -8,6 +8,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.example.p320_22.model.Movie;
@@ -41,6 +42,22 @@ public class MovieController {
 				return ResponseEntity.notFound().build();
 			}
 			return ResponseEntity.status(HttpStatus.OK).body(movie);
+		} catch (SQLException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@GetMapping("/search")
+	public ResponseEntity<List<Movie>> searchMovies(
+			@RequestParam(required = false) String name,
+			@RequestParam(required = false) String castMember,
+			@RequestParam(required = false) String genre,
+			@RequestParam(required = false) String sortBy,
+			@RequestParam(defaultValue = "asc") String sortOrder) {
+		try {
+			List<Movie> movies = movieDAO.searchMovies(name, castMember, genre, sortBy, sortOrder);
+			
+			return ResponseEntity.status(HttpStatus.OK).body(movies);
 		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}

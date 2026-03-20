@@ -177,4 +177,78 @@ public class MovieDAO {
 			statement.executeUpdate();
 		}
 	}
+
+	public List<Movie> searchMovies(String movieName, String castMember, String genre, String sortBy, String sortOrder) throws SQLException {
+		List<Movie> movies = new ArrayList<>();
+
+		StringBuilder query = new StringBuilder(
+			"SELECT m.* FROM movie m "
+		);
+
+		if (castMember != null && !castMember.isEmpty()) {
+			query.append("JOIN actsin a ON m.movieid = a.movieid ")
+				.append("JOIN contributor c ON a.contributorid = c.contributorid ");
+		}
+
+		if (genre != null && !genre.isEmpty()) {
+			query.append("JOIN isgenre ig ON m.movieid = ig.movieid ")
+				.append("JOIN genre g ON ig.genreid = g.genreid ");
+		}
+
+		query.append("WHERE 1=1 ");
+
+		if (movieName != null && !movieName.isEmpty()) {
+			query.append("AND LOWER(m.title) = LOWER(?) ");
+		}
+
+		if (castMember != null && !castMember.isEmpty()) {
+			query.append("AND LOWER(c.name) = LOWER(?) ");
+		}
+
+		if (genre != null && !genre.isEmpty()) {
+			query.append("AND LOWER(g.genretitle) = LOWER(?) ");
+		}
+
+		query.append("ORDER BY ");
+
+		if (sortBy != null && !sortBy.isEmpty()) {
+			switch (sortBy.toLowerCase()) {
+				case "title" -> query.append("m.title ");
+				case "genre" -> query.append("g.genretitle ");
+				default -> query.append("m.title ");
+			}
+		} else {
+			query.append("m.title ");
+		}
+
+		if (sortOrder != null && sortOrder.equalsIgnoreCase("desc")) {
+			query.append("DESC ");
+		} else {
+			query.append("ASC ");
+		}
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query.toString());
+
+			int index = 1;
+
+			if (movieName != null && !movieName.isEmpty()) {
+				statement.setString(index++, movieName);
+			}
+			if (castMember != null && !castMember.isEmpty()) {
+				statement.setString(index++, castMember);
+			}
+			if (genre != null && !genre.isEmpty()) {
+				statement.setString(index++, genre);
+			}
+
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				movies.add(getMovie(rs.getInt("movieid")));
+			}
+		}
+
+		return movies;
+	}
 }
