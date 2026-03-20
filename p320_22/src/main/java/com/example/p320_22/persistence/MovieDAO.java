@@ -26,23 +26,7 @@ public class MovieDAO {
                 int movieID = rs.getInt("movieid");
 
                 Movie movie = getMovie(movieID);
-
-                ArrayList<Platform> platforms = new ArrayList<>();
-                ArrayList<Genre> genres = new ArrayList<>();
-                ArrayList<Producer> producers = new ArrayList<>();
-                ArrayList<Actor> actors = new ArrayList<>();
-
-                Movie movie = new Movie(
-                    rs.getInt("movieid"),
-                    rs.getString("title"),
-                    Rating.valueOf(rs.getString("mpaarating")),
-                    rs.getInt("length"),
-                    rs.getInt("contributorid"),
-                    platforms,
-                    genres,
-                    producers,
-                    actors
-                );
+				
                 movies.add(movie);
             }
 
@@ -118,20 +102,7 @@ public class MovieDAO {
 		return actors;
 	}
     
-	public Movie getMovie(int id) throws SQLException {
-        String query = "SELECT * FROM movie WHERE movieid = ?";
-
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, id);
-            ResultSet rs = statement.executeQuery();
-            
-            if(rs.next()) {
-                ArrayList<Platform> platforms = getPlatforms(id);
-                ArrayList<Genre> genres = getGenres(id);
-                ArrayList<Producer> producers = getProducers(id);
-                ArrayList<Actor> actors = getActors(id);
-    public Movie getMovie(int id) {
+    public Movie getMovie(int id) throws SQLException {
         String query = "SELECT * FROM movie WHERE id = ?";
 
         try (Connection connection = DatabaseConnection.getConnection()) {
@@ -140,16 +111,15 @@ public class MovieDAO {
             ResultSet rs = statement.executeQuery();
             
             if(rs.next()) {
-                ArrayList<Platform> platforms = new ArrayList<>();
-                ArrayList<Genre> genres = new ArrayList<>();
-                ArrayList<Producer> producers = new ArrayList<>();
-                ArrayList<Actor> actors = new ArrayList<>();
+                ArrayList<Platform> platforms = getPlatforms(id);
+                ArrayList<Genre> genres = getGenres(id);
+                ArrayList<Producer> producers = getProducers(id);
+                ArrayList<Actor> actors = getActors(id);
 
                 Movie movie = new Movie(
                     rs.getInt("movieid"),
                     rs.getString("title"),
                     Rating.fromString(rs.getString("mpaarating")),
-                    Rating.valueOf(rs.getString("mpaarating")),
                     rs.getInt("length"),
                     rs.getInt("contributorid"),
                     platforms,
@@ -160,15 +130,7 @@ public class MovieDAO {
                 
 				return movie;
             }
-
         }
-                return movie;
-            }
-
-        } catch (SQLException e) {
-			System.err.println("getMovie");
-			e.printStackTrace();
-		}
         return null;
     }
 
@@ -224,13 +186,11 @@ public class MovieDAO {
 		);
 
 		if (castMember != null && !castMember.isEmpty()) {
-			query.append("JOIN actsin a ON m.movieid = a.movieid ")
-				.append("JOIN contributor c ON a.contributorid = c.contributorid ");
+			query.append("JOIN actsin a ON m.movieid = a.movieid JOIN contributor c ON a.contributorid = c.contributorid ");
 		}
 
 		if (genre != null && !genre.isEmpty()) {
-			query.append("JOIN isgenre ig ON m.movieid = ig.movieid ")
-				.append("JOIN genre g ON ig.genreid = g.genreid ");
+			query.append("JOIN isgenre ig ON m.movieid = ig.movieid JOIN genre g ON ig.genreid = g.genreid ");
 		}
 
 		boolean isFirst = true;
@@ -274,16 +234,16 @@ public class MovieDAO {
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query.toString());
 
-			int index = 1;
+			int i = 1;
 
 			if (movieName != null && !movieName.isEmpty()) {
-				statement.setString(index++, movieName);
+				statement.setString(i++, movieName);
 			}
 			if (castMember != null && !castMember.isEmpty()) {
-				statement.setString(index++, castMember);
+				statement.setString(i++, castMember);
 			}
 			if (genre != null && !genre.isEmpty()) {
-				statement.setString(index++, genre);
+				statement.setString(i++, genre);
 			}
 
 			ResultSet rs = statement.executeQuery();

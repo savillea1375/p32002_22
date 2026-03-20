@@ -8,6 +8,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
@@ -51,12 +53,7 @@ public class MovieController {
 	}
 
 	@GetMapping("/search")
-	public ResponseEntity<List<Movie>> searchMovies(
-			@RequestParam(required = false) String name,
-			@RequestParam(required = false) String castMember,
-			@RequestParam(required = false) String genre,
-			@RequestParam(required = false) String sortBy,
-			@RequestParam(defaultValue = "asc") String sortOrder) {
+	public ResponseEntity<List<Movie>> searchMovies(@RequestParam(required = false) String name, @RequestParam(required = false) String castMember, @RequestParam(required = false) String genre, @RequestParam(required = false) String sortBy, @RequestParam(defaultValue = "asc") String sortOrder) {
 		try {
 			List<Movie> movies = movieDAO.searchMovies(name, castMember, genre, sortBy, sortOrder);
 			
@@ -64,16 +61,6 @@ public class MovieController {
 		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
-		Movie movie = movieDAO.getMovie(id);
-		if (movie == null) {
-			return ResponseEntity.notFound().build();
-		}
-		return ResponseEntity.status(HttpStatus.OK).body(movie);
-	}
-
-	@PostMapping
-	public Movie addMovie(@RequestBody Movie movie) {
-		return movie;
 	}
 
 	@PostMapping("watch/{id}")
