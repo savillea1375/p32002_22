@@ -7,15 +7,16 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 
 import com.example.p320_22.DatabaseConnection;
-import com.example.p320_22.model.Actor;
 import com.example.p320_22.model.Collection;
-import com.example.p320_22.model.Genre;
 import com.example.p320_22.model.Movie;
-import com.example.p320_22.model.Platform;
-import com.example.p320_22.model.Producer;
-import com.example.p320_22.model.Rating;
 
 public class CollectionDAO {
+	private MovieDAO movieDAO;
+
+	public CollectionDAO() {
+		this.movieDAO = new MovieDAO();
+	}
+
 	/**
 	 * Fetches all the movies in a collection
 	 * 
@@ -45,18 +46,8 @@ public class CollectionDAO {
 
 				while (movieSet.next()) {
 					int movieId = movieSet.getInt("movieid");
-					String title = movieSet.getString("title");
-					Rating rating = Rating.fromString(movieSet.getString("mpaarating"));
-					int directorID = movieSet.getInt("contributorid");
-					int length = movieSet.getInt("length");
-					ArrayList<Platform> platforms = new ArrayList<>();
-					ArrayList<Genre> genres = new ArrayList<>();
-					ArrayList<Producer> producers = new ArrayList<>();
-					ArrayList<Actor> actors = new ArrayList<>();
 
-					// TODO get platforms, genres, producers, and actors
-
-					Movie movie = new Movie(movieId, title, rating, length, directorID, platforms, genres, producers, actors);
+					Movie movie = movieDAO.getMovie(movieId);
 
 					collection.addMovie(movie);
 				}

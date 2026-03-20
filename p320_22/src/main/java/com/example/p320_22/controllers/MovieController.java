@@ -1,6 +1,5 @@
 package com.example.p320_22.controllers;
 
-import java.util.ArrayList;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,7 +13,6 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.p320_22.model.Movie;
 import com.example.p320_22.persistence.MovieDAO;
-import com.example.p320_22.persistence.UserDAO;
 
 @RestController
 @RequestMapping("/movies")
