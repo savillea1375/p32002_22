@@ -13,6 +13,7 @@ import com.example.p320_22.model.*;
 public class MovieDAO {
     
     // Get all movies in collection 
+    //Get all movies in collection 
     public List<Movie> getAllMovies() {
         String query = "SELECT * FROM movie";
         List<Movie> movies = new ArrayList<>();
@@ -26,6 +27,22 @@ public class MovieDAO {
 
                 Movie movie = getMovie(movieID);
 
+                ArrayList<Platform> platforms = new ArrayList<>();
+                ArrayList<Genre> genres = new ArrayList<>();
+                ArrayList<Producer> producers = new ArrayList<>();
+                ArrayList<Actor> actors = new ArrayList<>();
+
+                Movie movie = new Movie(
+                    rs.getInt("movieid"),
+                    rs.getString("title"),
+                    Rating.valueOf(rs.getString("mpaarating")),
+                    rs.getInt("length"),
+                    rs.getInt("contributorid"),
+                    platforms,
+                    genres,
+                    producers,
+                    actors
+                );
                 movies.add(movie);
             }
 
@@ -114,11 +131,25 @@ public class MovieDAO {
                 ArrayList<Genre> genres = getGenres(id);
                 ArrayList<Producer> producers = getProducers(id);
                 ArrayList<Actor> actors = getActors(id);
+    public Movie getMovie(int id) {
+        String query = "SELECT * FROM movie WHERE id = ?";
+
+        try (Connection connection = DatabaseConnection.getConnection()) {
+            PreparedStatement statement = connection.prepareStatement(query);
+            statement.setString(1, String.valueOf(id));
+            ResultSet rs = statement.executeQuery();
+            
+            if(rs.next()) {
+                ArrayList<Platform> platforms = new ArrayList<>();
+                ArrayList<Genre> genres = new ArrayList<>();
+                ArrayList<Producer> producers = new ArrayList<>();
+                ArrayList<Actor> actors = new ArrayList<>();
 
                 Movie movie = new Movie(
                     rs.getInt("movieid"),
                     rs.getString("title"),
                     Rating.fromString(rs.getString("mpaarating")),
+                    Rating.valueOf(rs.getString("mpaarating")),
                     rs.getInt("length"),
                     rs.getInt("contributorid"),
                     platforms,
@@ -131,6 +162,13 @@ public class MovieDAO {
             }
 
         }
+                return movie;
+            }
+
+        } catch (SQLException e) {
+			System.err.println("getMovie");
+			e.printStackTrace();
+		}
         return null;
     }
 
