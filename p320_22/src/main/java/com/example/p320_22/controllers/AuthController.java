@@ -37,11 +37,11 @@ public class AuthController {
 	@PostMapping("/signup")
 	public ResponseEntity<User> signup(@RequestBody User user, HttpSession session) {
 		try {
-			User createdUser = userDAO.createUser(user);
+			userDAO.createUser(user);
 
 			session.setAttribute("username", user.getUsername());
 
-			return ResponseEntity.status(HttpStatus.CREATED).body(createdUser);
+			return ResponseEntity.status(HttpStatus.CREATED).build();
 		} catch (SQLException e) {
 			if (e.getSQLState().equals("23505")) {
             	return ResponseEntity.status(HttpStatus.CONFLICT).build();
@@ -68,7 +68,7 @@ public class AuthController {
 			session.setAttribute("username", user.getUsername());
 
 			userDAO.updateLastAccess(user.getUsername());
-			return ResponseEntity.status(HttpStatus.OK).body(user);
+			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
