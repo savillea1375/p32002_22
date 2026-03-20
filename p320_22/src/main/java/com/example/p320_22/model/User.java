@@ -41,6 +41,9 @@ public class User {
 	public Instant getLastAccessDate() { return this.lastAccessDate; }
 	public ArrayList<Collection> getCollections() { return this.collections; }
 
+	/** Settesr */
+	public void setPassword(String password) { this.password = password; }
+
 	public void setLastAccessDate(Instant lastAccessDate) {
 		this.lastAccessDate = lastAccessDate;
 	}

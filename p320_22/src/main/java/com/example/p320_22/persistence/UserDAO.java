@@ -11,6 +11,12 @@ import com.example.p320_22.model.Collection;
 import com.example.p320_22.model.User;
 
 public class UserDAO {
+	private CollectionDAO collectionDAO;
+
+	public UserDAO() {
+		collectionDAO = new CollectionDAO();
+	}
+
 	/** 
 	 * Finds a user by their email
 	 * 
@@ -26,8 +32,8 @@ public class UserDAO {
 			ResultSet rs = statement.executeQuery();
 
 			if (rs.next()) {
-				ArrayList<Collection> userCollections = new ArrayList<>();
-				// TODO: call get user collections query
+				String username = rs.getString("username");
+				ArrayList<Collection> userCollections = collectionDAO.getAllCollectionsFromUser(username);
 
 				User user = new User(
 					rs.getTimestamp("creation_date").toInstant(),
@@ -65,8 +71,7 @@ public class UserDAO {
 			ResultSet rs = statement.executeQuery();
 
 			if (rs.next()) {
-				ArrayList<Collection> userCollections = new ArrayList<>();
-				// TODO: call get user collections query
+				ArrayList<Collection> userCollections = collectionDAO.getAllCollectionsFromUser(username);
 
 				User user = new User(
 					rs.getTimestamp("creation_date").toInstant(),
