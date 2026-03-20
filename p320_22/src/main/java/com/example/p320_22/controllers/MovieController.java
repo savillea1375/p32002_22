@@ -1,6 +1,6 @@
 package com.example.p320_22.controllers;
 
-import java.util.ArrayList;
+import java.sql.SQLException;
 import java.util.List;
 
 import org.springframework.http.HttpStatus;
@@ -14,7 +14,8 @@ import org.springframework.web.bind.annotation.RestController;
 
 import com.example.p320_22.model.Movie;
 import com.example.p320_22.persistence.MovieDAO;
-import com.example.p320_22.persistence.UserDAO;
+
+import jakarta.servlet.http.HttpSession;
 
 @RestController
 @RequestMapping("/movies")
@@ -46,7 +47,21 @@ public class MovieController {
 
 	@PostMapping
 	public Movie addMovie(@RequestBody Movie movie) {
-		
 		return movie;
+	}
+
+	@PostMapping("watch/{id}")
+	public ResponseEntity<String> watchMovie(@PathVariable int id, HttpSession session) {
+		String username = (String) session.getAttribute("username");
+
+		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be signed in to watch a movie");
+
+		try {
+			movieDAO.watchMovie(username, id);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }

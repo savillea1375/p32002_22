@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 
 import com.example.p320_22.DatabaseConnection;
@@ -84,4 +85,35 @@ public class MovieDAO {
 		}
         return null;
     }
+
+	public void watchMovie(String username, int movieID) throws SQLException {
+		String query = "INSERT INTO watchesmovie (username, movieid, watchtimestamp) VALUES (?, ?, ?)";
+
+		try (Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement statement = connection.prepareStatement(query)) {
+
+			statement.setString(1, username);
+			statement.setInt(2, movieID);
+			statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+
+			statement.executeUpdate();
+    	}
+	}
+
+	public void watchCollection(String username, int collectionID) throws SQLException {
+		String selectQuery = "SELECT movieid FROM storesmovieincollection WHERE collectionid = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+
+			selectStatement.setInt(1, collectionID);
+			ResultSet rs = selectStatement.executeQuery();
+
+			while (rs.next()) {
+				int movieID = rs.getInt("movieid");
+				
+				watchMovie(username, movieID);
+        	}
+		}
+	}
 }
