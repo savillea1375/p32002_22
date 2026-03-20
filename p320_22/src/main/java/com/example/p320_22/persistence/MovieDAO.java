@@ -101,19 +101,32 @@ public class MovieDAO {
 	}
 
 	public void watchCollection(String username, int collectionID) throws SQLException {
-		String selectQuery = "SELECT movieid FROM storesmovieincollection WHERE collectionid = ?";
+		String query = "SELECT movieid FROM storesmovieincollection WHERE collectionid = ?";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
-			PreparedStatement selectStatement = connection.prepareStatement(selectQuery);
+			PreparedStatement statement = connection.prepareStatement(query);
 
-			selectStatement.setInt(1, collectionID);
-			ResultSet rs = selectStatement.executeQuery();
+			statement.setInt(1, collectionID);
+			ResultSet rs = statement.executeQuery();
 
 			while (rs.next()) {
 				int movieID = rs.getInt("movieid");
 				
 				watchMovie(username, movieID);
         	}
+		}
+	}
+
+	public void rateMovie(String username, int movieID, int rating) throws SQLException {
+		String query = "INSERT INTO ratesmovie (username, movieid, rating) VALUES (?, ?, ?) ON CONFLICT (username, movieid) DO UPDATE SET rating = EXCLUDED.rating";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+
+			statement.setString(1, username);
+			statement.setInt(2, movieID);
+			statement.setInt(3, rating);
+			statement.executeUpdate();
 		}
 	}
 }

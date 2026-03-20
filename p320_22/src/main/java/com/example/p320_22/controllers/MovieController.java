@@ -2,6 +2,7 @@ package com.example.p320_22.controllers;
 
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Map;
 
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -58,6 +59,24 @@ public class MovieController {
 
 		try {
 			movieDAO.watchMovie(username, id);
+
+			return ResponseEntity.status(HttpStatus.OK).build();
+		} catch (SQLException e) {
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@PostMapping("rate/{id}")
+	public ResponseEntity<String> rateMovie(@PathVariable int id, @RequestBody Map<String, Integer> body, HttpSession session) {
+		String username = (String) session.getAttribute("username");
+		int rating = body.get("rating");
+
+		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body("Must be signed in to rate a movie");
+
+		if (rating < 0 || rating > 10) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("Rating must be a number 1-10");
+
+		try {
+			movieDAO.rateMovie(username, id, rating);
 
 			return ResponseEntity.status(HttpStatus.OK).build();
 		} catch (SQLException e) {
