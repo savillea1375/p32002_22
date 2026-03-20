@@ -195,18 +195,24 @@ public class MovieDAO {
 				.append("JOIN genre g ON ig.genreid = g.genreid ");
 		}
 
-		query.append("WHERE 1=1 ");
+		boolean isFirst = true;
 
 		if (movieName != null && !movieName.isEmpty()) {
-			query.append("AND LOWER(m.title) = LOWER(?) ");
+			if (!isFirst) query.append("AND ");
+			else isFirst = false;
+			query.append("LOWER(m.title) = LOWER(?) ");
 		}
 
 		if (castMember != null && !castMember.isEmpty()) {
-			query.append("AND LOWER(c.name) = LOWER(?) ");
+			if (!isFirst) query.append("AND ");
+			else isFirst = false;
+			query.append("LOWER(c.name) = LOWER(?) ");
 		}
 
 		if (genre != null && !genre.isEmpty()) {
-			query.append("AND LOWER(g.genretitle) = LOWER(?) ");
+			if (!isFirst) query.append("AND ");
+			else isFirst = false;
+			query.append("LOWER(g.genretitle) = LOWER(?) ");
 		}
 
 		query.append("ORDER BY ");
