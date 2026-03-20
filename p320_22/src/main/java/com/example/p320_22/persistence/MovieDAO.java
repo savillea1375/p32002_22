@@ -4,6 +4,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Timestamp;
 import java.util.*;
 
 import com.example.p320_22.DatabaseConnection;
@@ -21,22 +22,10 @@ public class MovieDAO {
             ResultSet rs = statement.executeQuery();
             
             while(rs.next()) {
-                ArrayList<Platform> platforms = new ArrayList<>();
-                ArrayList<Genre> genres = new ArrayList<>();
-                ArrayList<Producer> producers = new ArrayList<>();
-                ArrayList<Actor> actors = new ArrayList<>();
+                int movieID = rs.getInt("movieid");
 
-                Movie movie = new Movie(
-                    rs.getInt("movieid"),
-                    rs.getString("title"),
-                    Rating.valueOf(rs.getString("mpaarating")),
-                    rs.getInt("length"),
-                    rs.getInt("contributorid"),
-                    platforms,
-                    genres,
-                    producers,
-                    actors
-                );
+                Movie movie = getMovie(movieID);
+
                 movies.add(movie);
             }
 
@@ -63,6 +52,8 @@ public class MovieDAO {
                 ArrayList<Producer> producers = new ArrayList<>();
                 ArrayList<Actor> actors = new ArrayList<>();
 
+				// Todo get arrayLists
+
                 Movie movie = new Movie(
                     rs.getInt("movieid"),
                     rs.getString("title"),
@@ -84,4 +75,48 @@ public class MovieDAO {
 		}
         return null;
     }
+
+	public void watchMovie(String username, int movieID) throws SQLException {
+		String query = "INSERT INTO watchesmovie (username, movieid, watchtimestamp) VALUES (?, ?, ?)";
+
+		try (Connection connection = DatabaseConnection.getConnection();
+			PreparedStatement statement = connection.prepareStatement(query)) {
+
+			statement.setString(1, username);
+			statement.setInt(2, movieID);
+			statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
+
+			statement.executeUpdate();
+    	}
+	}
+
+	public void watchCollection(String username, int collectionID) throws SQLException {
+		String query = "SELECT movieid FROM storesmovieincollection WHERE collectionid = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+
+			statement.setInt(1, collectionID);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				int movieID = rs.getInt("movieid");
+				
+				watchMovie(username, movieID);
+        	}
+		}
+	}
+
+	public void rateMovie(String username, int movieID, int rating) throws SQLException {
+		String query = "INSERT INTO ratesmovie (username, movieid, rating) VALUES (?, ?, ?) ON CONFLICT (username, movieid) DO UPDATE SET rating = EXCLUDED.rating";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+
+			statement.setString(1, username);
+			statement.setInt(2, movieID);
+			statement.setInt(3, rating);
+			statement.executeUpdate();
+		}
+	}
 }
