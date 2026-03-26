@@ -8,13 +8,78 @@ import java.util.ArrayList;
 
 import com.example.p320_22.DatabaseConnection;
 import com.example.p320_22.model.Collection;
+import com.example.p320_22.model.Movie;
 import com.example.p320_22.model.User;
+import com.example.p320_22.model.UserProfile;
 
 public class UserDAO {
 	private CollectionDAO collectionDAO;
+	private MovieDAO movieDAO;
 
 	public UserDAO() {
 		collectionDAO = new CollectionDAO();
+		movieDAO = new MovieDAO();
+	}
+
+	/** 
+	 *  Gets a users profile by username containing:
+	 *  the # of collections they own, their follower count,
+	 *  the # of users they are following, and their top 10 movies (by rating)
+	 */
+	public UserProfile getUserProfile(String username) throws SQLException {
+		User user = getByUsername(username);
+		if (user == null) return null;
+
+		String collectionCountQuery = "SELECT COUNT(collectionid) FROM collection WHERE username = ?";
+		String followerCountQuery = "SELECT COUNT(follower_username) FROM follows WHERE following_username = ?";
+		String followingCountQuery = "SELECT COUNT(following_username) FROM follows WHERE follower_username = ?";
+		String topTenMovieQuery = "SELECT movieid FROM ratesmovie WHERE username = ? ORDER BY rating DESC LIMIT 10";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			int collectionCount = 0;
+			int followerCount = 0;
+			int followingCount = 0;
+			ArrayList<Movie> topTenMovies = new ArrayList<>();
+
+			// Collection count
+			PreparedStatement collectionCountStatement = connection.prepareStatement(collectionCountQuery);
+			collectionCountStatement.setString(1, username);
+			ResultSet collectionRs = collectionCountStatement.executeQuery();
+
+			if (collectionRs.next()) {
+				collectionCount = collectionRs.getInt("count");
+			}
+
+			// Follower count
+			PreparedStatement followerCountStatement = connection.prepareStatement(followerCountQuery);
+			followerCountStatement.setString(1, username);
+			ResultSet followerRs = followerCountStatement.executeQuery();
+
+			if (followerRs.next()) {
+				followerCount = followerRs.getInt("count");
+			}
+
+			// Following count
+			PreparedStatement followingCountStatement = connection.prepareStatement(followingCountQuery);
+			followingCountStatement.setString(1, username);
+			ResultSet followingRs = followingCountStatement.executeQuery();
+
+			if (followingRs.next()) {
+				followingCount = followingRs.getInt("count");
+			}
+
+			// Top ten movies
+			PreparedStatement movieQuery = connection.prepareStatement(topTenMovieQuery);
+			movieQuery.setString(1, username);
+			ResultSet movieRs = movieQuery.executeQuery();
+
+			while (movieRs.next()) {
+				Movie movie = movieDAO.getMovie(movieRs.getInt("movieid"));
+				topTenMovies.add(movie);
+			}
+
+			return new UserProfile(username, collectionCount, followerCount, followingCount, topTenMovies);
+		}
 	}
 
 	/** 
