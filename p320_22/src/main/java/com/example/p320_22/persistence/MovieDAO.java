@@ -178,6 +178,27 @@ public class MovieDAO {
 		}
 	}
 
+	public ArrayList<Movie> getMostPopularLast90Days() throws SQLException {
+		ArrayList<Movie> movies = new ArrayList<>();
+
+		// Get top 20 movies with highest watch count sort DESC
+		String query = "SELECT * FROM movie WHERE movieid IN " +
+		"(SELECT movieid FROM watchesmovie WHERE " + 
+		"watchtimestamp >= NOW() - INTERVAL '90 days' GROUP BY movieid ORDER BY COUNT(movieid) DESC LIMIT 20)";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				Movie movie = getMovie(rs.getInt("movieid"));
+				movies.add(movie);
+			}
+		}
+
+		return movies;
+	}
+
 	public List<Movie> searchMovies(String movieName, String castMember, String genre, String sortBy, String sortOrder) throws SQLException {
 		List<Movie> movies = new ArrayList<>();
 
