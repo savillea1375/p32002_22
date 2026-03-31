@@ -16,9 +16,12 @@ public class SSHTunnel {
             return;
         }
 
-		Dotenv dotenv = Dotenv.load();
+		Dotenv dotenv = Dotenv.configure()
+            .directory("./")
+            .filename(".env")
+            .load();
 
-		String user = dotenv.get("USERNAME");
+		String user = dotenv.get("DB_USERNAME");
 		String password = dotenv.get("PASSWORD");
         String sshHost = "starbug.cs.rit.edu";
         int sshPort = 22;
