@@ -61,6 +61,7 @@ public class MovieController {
 			}
 			return ResponseEntity.status(HttpStatus.OK).body(movie);
 		} catch (SQLException e) {
+			e.printStackTrace();
 			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
 		}
 	}
