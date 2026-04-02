@@ -199,6 +199,10 @@ public class MovieDAO {
 		return movies;
 	}
 
+	public ArrayList<Movie> getMostPopularFollowing() throws SQLException {
+		return null;
+	}
+
 	public List<Movie> searchMovies(String movieName, String castMember, String genre, String sortBy, String sortOrder) throws SQLException {
 		List<Movie> movies = new ArrayList<>();
 
