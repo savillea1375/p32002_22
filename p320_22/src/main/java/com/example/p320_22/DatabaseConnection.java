@@ -12,7 +12,7 @@ import io.github.cdimascio.dotenv.Dotenv;
 public class DatabaseConnection {
 	private static Dotenv dotenv = Dotenv.load();
 	private static final String URL = dotenv.get("JDBC_URL");
-	private static final String USERNAME = dotenv.get("USERNAME");
+	private static final String USERNAME = dotenv.get("DB_USERNAME");
 	private static final String PASSWORD = dotenv.get("PASSWORD");
 
 	// Start SSH tunneling once before attemping DB conneciton
