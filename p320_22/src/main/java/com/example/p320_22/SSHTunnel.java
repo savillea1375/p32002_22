@@ -18,7 +18,7 @@ public class SSHTunnel {
 
 		Dotenv dotenv = Dotenv.load();
 
-		String user = dotenv.get("USERNAME");
+		String user = dotenv.get("DB_USERNAME");
 		String password = dotenv.get("PASSWORD");
         String sshHost = "starbug.cs.rit.edu";
         int sshPort = 22;
@@ -38,7 +38,7 @@ public class SSHTunnel {
 
             session.setPortForwardingL(localPort, dbHost, dbPort);
 
-            System.out.println("SSH tunnel established on port " + localPort);
+			System.out.println("SSH tunnel established on port " + localPort);
         } catch (Exception e) {
 			System.err.println("Couldn't start SSH tunnel");
             e.printStackTrace();

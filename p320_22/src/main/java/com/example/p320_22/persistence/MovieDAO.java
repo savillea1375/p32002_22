@@ -199,6 +199,30 @@ public class MovieDAO {
 		return movies;
 	}
 
+	public ArrayList<Movie> getNewReleasesOfMonth() throws SQLException {
+		ArrayList<Movie> movies = new ArrayList<>();
+
+		// Get top 5 newest releases from this calendar month
+		String query = "SELECT m.*, COUNT(w.movieid) AS watch_count " +
+						"FROM movie m " +
+						"LEFT JOIN watchesmovie w ON m.movieid = w.movieid " +
+						"GROUP BY m.movieid " +
+						"ORDER BY watch_count DESC " +
+						"LIMIT 5";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				Movie movie = getMovie(rs.getInt("movieid"));
+				movies.add(movie);
+			}
+		}
+
+		return movies;
+	}
+
 	public List<Movie> searchMovies(String movieName, String castMember, String genre, String sortBy, String sortOrder) throws SQLException {
 		List<Movie> movies = new ArrayList<>();
 
