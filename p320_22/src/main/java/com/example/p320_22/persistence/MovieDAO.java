@@ -200,6 +200,9 @@ public class MovieDAO {
 	}
 
 	public ArrayList<Movie> getMostPopularFollowing() throws SQLException {
+		ArrayList<Movie> movies = new ArrayList();
+
+		//Get top 20 movies with highest watch count among the users that are being followed sort DESC
 		return null;
 	}
 
