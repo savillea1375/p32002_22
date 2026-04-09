@@ -5,7 +5,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import org.apache.catalina.connector.Response;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -38,6 +37,18 @@ public class MovieController {
 		}
 		
 		return ResponseEntity.status(HttpStatus.OK).body(movies);
+	}
+
+	@GetMapping("/new")
+	public ResponseEntity<List<Movie>> getNewReleasesOfMonth() {
+		try {
+			List<Movie> movies = movieDAO.getNewReleasesOfMonth();
+	
+			return ResponseEntity.status(HttpStatus.OK).body(movies);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 
 	@GetMapping("/popular/90days")
