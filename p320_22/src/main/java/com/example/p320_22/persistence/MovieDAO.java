@@ -199,11 +199,23 @@ public class MovieDAO {
 		return movies;
 	}
 
-	public ArrayList<Movie> getMostPopularFollowing() throws SQLException {
+	public ArrayList<Movie> getMostPopularFollowing(String username) throws SQLException {
 		ArrayList<Movie> movies = new ArrayList();
 
 		//Get top 20 movies with highest watch count among the users that are being followed sort DESC
-		return null;
+		String query = "SELECT movieid FROM movie WHERE movieid IN " +
+		"(SELECT movieid FROM watchesmovie" ;
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				Movie movie = getMovie(rs.getInt("movieid"));
+				movies.add(movie);
+			}
+		}
+		return movies;
 	}
 
 	public ArrayList<Movie> getNewReleasesOfMonth() throws SQLException {

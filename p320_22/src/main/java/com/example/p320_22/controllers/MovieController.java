@@ -64,9 +64,12 @@ public class MovieController {
 	}
 
 	@GetMapping("/popular/following")
-	public ResponseEntity<List<Movie>> getMostPopularFollowing() {
+	public ResponseEntity<List<Movie>> getMostPopularFollowing(HttpSession session) {
+		String username = (String) session.getAttribute("username");
+		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
 		try {
-			List<Movie> movies = movieDAO.getMostPopularFollowing();
+			List<Movie> movies = movieDAO.getMostPopularFollowing(username);
 
 			return ResponseEntity.status(HttpStatus.OK).body(movies);
 		} catch (SQLException e) {
