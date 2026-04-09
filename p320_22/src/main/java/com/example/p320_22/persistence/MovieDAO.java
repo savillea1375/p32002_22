@@ -203,11 +203,16 @@ public class MovieDAO {
 		ArrayList<Movie> movies = new ArrayList();
 
 		//Get top 20 movies with highest watch count among the users that are being followed sort DESC
-		String query = "SELECT movieid FROM movie WHERE movieid IN " +
-		"(SELECT movieid FROM watchesmovie" ;
+		String query = "SELECT movieid FROM " +
+		"(SELECT wm.movieid FROM watchesmovie wm " +
+		"JOIN follows f ON wm.username = f.following_username " +
+		"WHERE f.follower_username = ? " +
+		"GROUP BY wm.movieid ORDER BY COUNT(*) DESC LIMIT 20)" +
+		"AS popular_following";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
 			ResultSet rs = statement.executeQuery();
 
 			while (rs.next()) {
