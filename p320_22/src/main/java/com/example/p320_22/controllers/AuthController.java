@@ -1,5 +1,8 @@
 package com.example.p320_22.controllers;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
 import java.sql.SQLException;
 
 import org.springframework.http.HttpStatus;
@@ -15,6 +18,8 @@ import com.example.p320_22.persistence.UserDAO;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
+
+
 
 /**
  * Handles creating a user account, logging in, and logging out
@@ -39,10 +44,12 @@ public class AuthController {
 		try {
 			userDAO.createUser(user);
 
+
 			session.setAttribute("username", user.getUsername());
 
 			return ResponseEntity.status(HttpStatus.CREATED).build();
 		} catch (SQLException e) {
+			e.printStackTrace();
 			if (e.getSQLState().equals("23505")) {
             	return ResponseEntity.status(HttpStatus.CONFLICT).build();
         	}
@@ -61,7 +68,21 @@ public class AuthController {
 		try {
 			User user = userDAO.getByUsername(req.getUsername());
 
-			if (user == null || !user.getPassword().equals(req.getPassword())) {
+			//this finds the salt value of the username in the database
+			//and it hashes it with the password given by the user
+			//and checks if the hash given matches what's in the database password column
+			String saltPassword = null;
+			String saltString = userDAO.getSaltByUsername(req.getUsername());
+			try{
+				saltPassword = userDAO.byteToString(userDAO.getSHA((req.getPassword()+saltString)));
+
+			} catch (NoSuchAlgorithmException e){
+				System.out.println("error trying to login");
+				e.printStackTrace();
+			}
+
+
+			if (user == null || !user.getPassword().equals(saltPassword)) {
 				return ResponseEntity.status(401).build();
 			}
 
@@ -95,4 +116,7 @@ public class AuthController {
 			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
 		}
 	}
+
+
+
 }

@@ -1,85 +1,25 @@
 package com.example.p320_22.persistence;
 
+import java.math.BigInteger;
+import java.nio.charset.StandardCharsets;
+import java.security.NoSuchAlgorithmException;
+import java.security.SecureRandom;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.security.MessageDigest;
 
 import com.example.p320_22.DatabaseConnection;
 import com.example.p320_22.model.Collection;
-import com.example.p320_22.model.Movie;
 import com.example.p320_22.model.User;
-import com.example.p320_22.model.UserProfile;
 
 public class UserDAO {
 	private CollectionDAO collectionDAO;
-	private MovieDAO movieDAO;
 
 	public UserDAO() {
 		collectionDAO = new CollectionDAO();
-		movieDAO = new MovieDAO();
-	}
-
-	/** 
-	 *  Gets a users profile by username containing:
-	 *  the # of collections they own, their follower count,
-	 *  the # of users they are following, and their top 10 movies (by rating)
-	 */
-	public UserProfile getUserProfile(String username) throws SQLException {
-		User user = getByUsername(username);
-		if (user == null) return null;
-
-		String collectionCountQuery = "SELECT COUNT(collectionid) FROM collection WHERE username = ?";
-		String followerCountQuery = "SELECT COUNT(follower_username) FROM follows WHERE following_username = ?";
-		String followingCountQuery = "SELECT COUNT(following_username) FROM follows WHERE follower_username = ?";
-		String topTenMovieQuery = "SELECT movieid FROM ratesmovie WHERE username = ? ORDER BY rating DESC LIMIT 10";
-
-		try (Connection connection = DatabaseConnection.getConnection()) {
-			int collectionCount = 0;
-			int followerCount = 0;
-			int followingCount = 0;
-			ArrayList<Movie> topTenMovies = new ArrayList<>();
-
-			// Collection count
-			PreparedStatement collectionCountStatement = connection.prepareStatement(collectionCountQuery);
-			collectionCountStatement.setString(1, username);
-			ResultSet collectionRs = collectionCountStatement.executeQuery();
-
-			if (collectionRs.next()) {
-				collectionCount = collectionRs.getInt("count");
-			}
-
-			// Follower count
-			PreparedStatement followerCountStatement = connection.prepareStatement(followerCountQuery);
-			followerCountStatement.setString(1, username);
-			ResultSet followerRs = followerCountStatement.executeQuery();
-
-			if (followerRs.next()) {
-				followerCount = followerRs.getInt("count");
-			}
-
-			// Following count
-			PreparedStatement followingCountStatement = connection.prepareStatement(followingCountQuery);
-			followingCountStatement.setString(1, username);
-			ResultSet followingRs = followingCountStatement.executeQuery();
-
-			if (followingRs.next()) {
-				followingCount = followingRs.getInt("count");
-			}
-
-			// Top ten movies
-			PreparedStatement movieQuery = connection.prepareStatement(topTenMovieQuery);
-			movieQuery.setString(1, username);
-			ResultSet movieRs = movieQuery.executeQuery();
-
-			while (movieRs.next()) {
-				Movie movie = movieDAO.getMovie(movieRs.getInt("movieid"));
-				topTenMovies.add(movie);
-			}
-
-			return new UserProfile(username, collectionCount, followerCount, followingCount, topTenMovies);
-		}
 	}
 
 	/** 
@@ -163,23 +103,91 @@ public class UserDAO {
 	 * Creates a user if they do not already exists
 	 */
 	public User createUser(User user) throws SQLException {
-		String query = "INSERT INTO users (username, email, password, first_name, last_name) VALUES (?, ?, ?, ?, ?)";
+		String query = "INSERT INTO users (username, email, password, first_name, last_name, salt) VALUES (?, ?, ?, ?, ?, ?)";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
+
+			String password = null;
+			byte[] salt = generateSalt();
+			String saltString = byteToString(salt);
+			try{
+				password = byteToString(getSHA((user.getPassword()+saltString)));
+			} catch (NoSuchAlgorithmException e){
+				System.out.print("Error trying to sign up");
+				e.printStackTrace();
+			}
 			statement.setString(1, user.getUsername());
 			statement.setString(2, user.getEmail());
-			statement.setString(3, user.getPassword());
+			statement.setString(3, password);
 			statement.setString(4, user.getFirstName());
 			statement.setString(5, user.getLastName());
-
+			statement.setString(6, saltString);
 			statement.executeUpdate();
 
 			updateLastAccess(user.getUsername());
-		}
+		} 
 
 		return user;
 	}
+
+
+
+	//this generates a random salt and returns it
+	private byte[] generateSalt(){
+		SecureRandom random = new SecureRandom();
+        byte[] salt = new byte[16]; 
+        random.nextBytes(salt);
+        return salt;
+	}
+
+
+
+		//this hashes the password+salt with SHA256 
+	public static byte[] getSHA(String input) throws NoSuchAlgorithmException
+    {
+        MessageDigest md = MessageDigest.getInstance("SHA-256");
+        return md.digest(input.getBytes(StandardCharsets.UTF_8));
+    }
+
+	
+
+		//converts bytes to string
+	public String byteToString(byte[] hash)
+    {
+        BigInteger num = new BigInteger(1, hash);
+        StringBuilder hString = new StringBuilder(num.toString(16));
+
+        while (hString.length() < 64)
+        {
+            hString.insert(0, '0');
+        }
+
+        return hString.toString();
+    }
+
+
+	//this gets the salt value in the database
+	public String getSaltByUsername(String username){
+
+		String query = "SELECT salt FROM users WHERE username = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+			if(rs.next()){
+				return rs.getString("salt");
+			}
+		} catch (SQLException e){
+			System.err.println("getSaltByUsername");
+			e.printStackTrace();
+
+		}
+		return null;
+	}
+
+
 
 	/** 
 	 * Given a username, updates the last access time of that user to the current time
