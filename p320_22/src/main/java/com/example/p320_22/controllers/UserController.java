@@ -27,25 +27,7 @@ public class UserController {
 		this.userDAO = new UserDAO();
 	}
 
-	/** 
-	 *  Gets a users profile by username containing:
-	 *  the # of collections they own, their follower count,
-	 *  the # of users they are following, and their top 10 movies (by rating)
-	 */
-	@GetMapping("/profile/{username}")
-	public ResponseEntity<?>getUserProfile(@PathVariable String username) {
-		try {
-			UserProfile profile = userDAO.getUserProfile(username);
-			if (profile == null) {
-				return ResponseEntity.status(HttpStatus.NOT_FOUND).body("User not found");
-			}
 
-			return ResponseEntity.status(HttpStatus.OK).body(profile);
-		} catch (SQLException e) {
-			e.printStackTrace();
-			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
-		}
-	}
 
 	/** 
 	 * Gets a user by the given email

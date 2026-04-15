@@ -40,6 +40,7 @@ public class User {
 	public String getLastName() { return this.lastName; }
 	public Instant getLastAccessDate() { return this.lastAccessDate; }
 	public ArrayList<Collection> getCollections() { return this.collections; }
+	//public string getSalt() {return this.salt}
 
 	/** Settesr */
 	public void setPassword(String password) { this.password = password; }
