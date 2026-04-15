@@ -234,11 +234,11 @@ public class UserDAO {
 		Map<String, Double> similarUsers = new HashMap<>();
 
 		String query = """
-			SELECT u2.username as other_user, COUNT(*) AS same_movies, AVG(ABS(u1.rating - u2.rating)) AS rating_diff
-			FROM ratesmovie u1
-			JOIN ratesmovie u2 ON u1.movieid = u2.movieid
-			WHERE u1.username = ? AND u2.username != ?
-			GROUP BY u2.username
+			SELECT r2.username as other_user, COUNT(*) AS same_movies, AVG(ABS(r1.rating - r2.rating)) AS rating_diff
+			FROM ratesmovie r1
+			JOIN ratesmovie r2 ON r1.movieid = r2.movieid
+			WHERE r1.username = ? AND r2.username != ?
+			GROUP BY r2.username
 			ORDER BY same_movies DESC, rating_diff ASC
 			LIMIT 50;
 				""";

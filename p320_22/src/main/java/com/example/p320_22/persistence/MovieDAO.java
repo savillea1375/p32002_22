@@ -309,4 +309,135 @@ public class MovieDAO {
 
 		return movies;
 	}
+
+	public double getUserRating(String username, int movieID){
+		String query = "SELECT rating FROM ratesmovie WHERE username = ? AND movie = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			statement.setString(2, username);
+			ResultSet rs = statement.executeQuery();
+
+			if(rs.next()){
+				return rs.getDouble("rating");
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return 0;
+	}
+
+	public Map<String, Integer> getUserFavGenres(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+  			SELECT g.genretitle, COUNT(*) as counter
+  			FROM ratesmovie r
+  			JOIN isgenre ig ON r.movieid = ig.movieid
+  			JOIN genre g ON ig.genreid = g.genreid
+  			WHERE r.username = ? AND r.rating >= 7
+  			GROUP BY g.genretitle
+		""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("genretitle"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<String, Integer> getUserFavProducers(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+  			SELECT c.name, COUNT(*) as counter
+  			FROM ratesmovie r
+  			JOIN produces p ON r.movieid = p.movieid
+  			JOIN contributor c ON p.contributorid = c.contributorid
+  			WHERE r.username = ? AND r.rating >= 7
+  			GROUP BY c.name
+		""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("name"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<String, Integer> getUserFavActors(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+  			SELECT c.name, COUNT(*) as counter
+  			FROM ratesmovie r
+  			JOIN actsin a ON r.movieid = a.movieid
+  			JOIN contributor c ON a.contributorid = c.contributorid
+  			WHERE r.username = ? AND r.rating >= 7
+  			GROUP BY c.name
+		""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("name"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<Integer, Integer> getUserFavDirectors(String username){
+		Map<Integer, Integer> map = new HashMap<>();
+
+		String query = """
+  			SELECT m.contributorid AS director_id, COUNT(*) as counter
+  			FROM ratesmovie r
+  			JOIN movie m ON r.movieid = m.movieid
+  			WHERE r.username = ? AND r.rating >= 7
+  			GROUP BY m.contributorid
+		""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getInt("director_id"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
 }
