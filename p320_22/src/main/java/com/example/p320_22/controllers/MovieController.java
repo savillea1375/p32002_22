@@ -1,5 +1,6 @@
 package com.example.p320_22.controllers;
 
+import java.lang.classfile.instruction.DiscontinuedInstruction.RetInstruction;
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
@@ -55,6 +56,21 @@ public class MovieController {
 		try {
 			List<Movie> movies = movieDAO.getMostPopularLast90Days();
 	
+			return ResponseEntity.status(HttpStatus.OK).body(movies);
+		} catch (SQLException e) {
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
+	}
+
+	@GetMapping("/popular/following")
+	public ResponseEntity<List<Movie>> getMostPopularFollowing(HttpSession session) {
+		String username = (String) session.getAttribute("username");
+		if (username == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+		try {
+			List<Movie> movies = movieDAO.getMostPopularFollowing(username);
+
 			return ResponseEntity.status(HttpStatus.OK).body(movies);
 		} catch (SQLException e) {
 			e.printStackTrace();
