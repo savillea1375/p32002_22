@@ -9,6 +9,8 @@ import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Map;
+import java.util.HashMap;
 import java.security.MessageDigest;
 
 import com.example.p320_22.DatabaseConnection;
@@ -26,7 +28,7 @@ public class UserDAO {
 		movieDAO = new MovieDAO();
 	}
 
-	/** 
+	/**
 	 *  Gets a users profile by username containing:
 	 *  the # of collections they own, their follower count,
 	 *  the # of users they are following, and their top 10 movies (by rating)
@@ -87,9 +89,9 @@ public class UserDAO {
 		}
 	}
 
-	/** 
+	/**
 	 * Finds a user by their email
-	 * 
+	 *
 	 * @return The user with the matching email
 	 */
 	public User getByEmail(String email) {
@@ -126,9 +128,9 @@ public class UserDAO {
 		return null;
 	}
 
-	/** 
+	/**
 	 * Finds a user by their username
-	 * 
+	 *
 	 * @return The user with the matching username
 	 */
 	public User getByUsername(String username) {
@@ -299,5 +301,41 @@ public class UserDAO {
 			if (res > 0) return true;
 			else return false;
 		}
+	}
+
+	public Map<String, Double> getSimilarUsers(String username) {
+		Map<String, Double> similarUsers = new HashMap<>();
+
+		String query = """
+			SELECT r2.username as other_user, COUNT(*) AS same_movies, AVG(ABS(r1.rating - r2.rating)) AS rating_diff
+			FROM ratesmovie r1
+			JOIN ratesmovie r2 ON r1.movieid = r2.movieid
+			WHERE r1.username = ? AND r2.username != ?
+			GROUP BY r2.username
+			ORDER BY same_movies DESC, rating_diff ASC
+			LIMIT 50;
+				""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			statement.setString(2, username);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				String otherUser = rs.getString("other_user");
+				int sameMovies = rs.getInt("same_movies");
+				double ratingDiff = rs.getDouble("rating_diff");
+
+				double similarity = sameMovies / (1.0 + ratingDiff);
+				similarUsers.put(otherUser, similarity);
+			}
+
+		} catch (SQLException e) {
+			System.out.println("getSimilarUsers");
+			e.printStackTrace();
+		}
+
+		return similarUsers;
 	}
 }

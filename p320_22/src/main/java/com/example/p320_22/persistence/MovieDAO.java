@@ -11,39 +11,39 @@ import com.example.p320_22.DatabaseConnection;
 import com.example.p320_22.model.*;
 
 public class MovieDAO {
-    
-    // Get all movies in collection 
-    //Get all movies in collection 
-    public List<Movie> getAllMovies() {
-        String query = "SELECT * FROM movie";
-        List<Movie> movies = new ArrayList<>();
 
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            ResultSet rs = statement.executeQuery();
-            
-            while(rs.next()) {
-                int movieID = rs.getInt("movieid");
+	// Get all movies in collection
+	//Get all movies in collection
+	public List<Movie> getAllMovies() {
+		String query = "SELECT * FROM movie";
+		List<Movie> movies = new ArrayList<>();
 
-                Movie movie = getMovie(movieID);
-				
-                movies.add(movie);
-            }
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			ResultSet rs = statement.executeQuery();
 
-            return movies;
+			while(rs.next()) {
+				int movieID = rs.getInt("movieid");
 
-        } catch (SQLException e) {
+				Movie movie = getMovie(movieID);
+
+				movies.add(movie);
+			}
+
+			return movies;
+
+		} catch (SQLException e) {
 			System.err.println("getAllMovies");
 			e.printStackTrace();
 		}
-        return null;
-    }
+		return null;
+	}
 
 	public ArrayList<Platform> getPlatforms(int id) throws SQLException {
 		String query = "SELECT rp.* FROM releaseplatform rp JOIN releasedon ro ON ro.platformid = rp.platformid WHERE ro.movieid = ?";
-		
+
 		ArrayList<Platform> platforms = new ArrayList<>();
-		
+
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
 			statement.setInt(1, id);
@@ -101,51 +101,51 @@ public class MovieDAO {
 		}
 		return actors;
 	}
-    
-    public Movie getMovie(int id) throws SQLException {
-        String query = "SELECT * FROM movie WHERE movieid = ?";
 
-        try (Connection connection = DatabaseConnection.getConnection()) {
-            PreparedStatement statement = connection.prepareStatement(query);
-            statement.setInt(1, id);
-            ResultSet rs = statement.executeQuery();
-            
-            if(rs.next()) {
-                ArrayList<Platform> platforms = getPlatforms(id);
-                ArrayList<Genre> genres = getGenres(id);
-                ArrayList<Producer> producers = getProducers(id);
-                ArrayList<Actor> actors = getActors(id);
+	public Movie getMovie(int id) throws SQLException {
+		String query = "SELECT * FROM movie WHERE movieid = ?";
 
-                Movie movie = new Movie(
-                    rs.getInt("movieid"),
-                    rs.getString("title"),
-                    Rating.fromString(rs.getString("mpaarating")),
-                    rs.getInt("length"),
-                    rs.getInt("contributorid"),
-                    platforms,
-                    genres,
-                    producers,
-                    actors
-                );
-                
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setInt(1, id);
+			ResultSet rs = statement.executeQuery();
+
+			if(rs.next()) {
+				ArrayList<Platform> platforms = getPlatforms(id);
+				ArrayList<Genre> genres = getGenres(id);
+				ArrayList<Producer> producers = getProducers(id);
+				ArrayList<Actor> actors = getActors(id);
+
+				Movie movie = new Movie(
+						rs.getInt("movieid"),
+						rs.getString("title"),
+						Rating.fromString(rs.getString("mpaarating")),
+						rs.getInt("length"),
+						rs.getInt("contributorid"),
+						platforms,
+						genres,
+						producers,
+						actors
+				);
+
 				return movie;
-            }
-        }
-        return null;
-    }
+			}
+		}
+		return null;
+	}
 
 	public void watchMovie(String username, int movieID) throws SQLException {
 		String query = "INSERT INTO watchesmovie (username, movieid, watchtimestamp) VALUES (?, ?, ?)";
 
 		try (Connection connection = DatabaseConnection.getConnection();
-			PreparedStatement statement = connection.prepareStatement(query)) {
+			 PreparedStatement statement = connection.prepareStatement(query)) {
 
 			statement.setString(1, username);
 			statement.setInt(2, movieID);
 			statement.setTimestamp(3, new Timestamp(System.currentTimeMillis()));
 
 			statement.executeUpdate();
-    	}
+		}
 	}
 
 	public void watchCollection(String username, int collectionID) throws SQLException {
@@ -159,9 +159,9 @@ public class MovieDAO {
 
 			while (rs.next()) {
 				int movieID = rs.getInt("movieid");
-				
+
 				watchMovie(username, movieID);
-        	}
+			}
 		}
 	}
 
@@ -181,10 +181,9 @@ public class MovieDAO {
 	public ArrayList<Movie> getMostPopularLast90Days() throws SQLException {
 		ArrayList<Movie> movies = new ArrayList<>();
 
-		// Get top 20 movies with highest watch count sort DESC
 		String query = "SELECT * FROM movie WHERE movieid IN " +
-		"(SELECT movieid FROM watchesmovie WHERE " + 
-		"watchtimestamp >= NOW() - INTERVAL '90 days' GROUP BY movieid ORDER BY COUNT(movieid) DESC LIMIT 20)";
+				"(SELECT movieid FROM watchesmovie WHERE " +
+				"watchtimestamp >= NOW() - INTERVAL '90 days' GROUP BY movieid ORDER BY COUNT(movieid) DESC LIMIT 20)";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -226,13 +225,12 @@ public class MovieDAO {
 	public ArrayList<Movie> getNewReleasesOfMonth() throws SQLException {
 		ArrayList<Movie> movies = new ArrayList<>();
 
-		// Get top 5 newest releases from this calendar month
 		String query = "SELECT m.*, COUNT(w.movieid) AS watch_count " +
-						"FROM movie m " +
-						"LEFT JOIN watchesmovie w ON m.movieid = w.movieid " +
-						"GROUP BY m.movieid " +
-						"ORDER BY watch_count DESC " +
-						"LIMIT 5";
+				"FROM movie m " +
+				"LEFT JOIN watchesmovie w ON m.movieid = w.movieid " +
+				"GROUP BY m.movieid " +
+				"ORDER BY watch_count DESC " +
+				"LIMIT 5";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -246,12 +244,11 @@ public class MovieDAO {
 
 		return movies;
 	}
-
 	public List<Movie> searchMovies(String movieName, String castMember, String genre, String sortBy, String sortOrder) throws SQLException {
 		List<Movie> movies = new ArrayList<>();
 
 		StringBuilder query = new StringBuilder(
-			"SELECT m.* FROM movie m "
+				"SELECT m.* FROM movie m "
 		);
 
 		if (castMember != null && !castMember.isEmpty()) {
@@ -332,5 +329,363 @@ public class MovieDAO {
 		}
 
 		return movies;
+	}
+
+	public Map<Integer, Double> getAllUserRatings(String username) {
+		Map<Integer, Double> ratings = new HashMap<>();
+
+		String query = "SELECT movieid, rating FROM ratesmovie WHERE username = ?";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				ratings.put(rs.getInt("movieid"), rs.getDouble("rating"));
+			}
+
+		} catch (SQLException e) {
+			System.out.println("getAllUserRatings");
+			e.printStackTrace();
+		}
+
+		return ratings;
+	}
+
+	public Map<String, Map<Integer, Double>> getUserRatings(Set<String> usernames){
+		Map<String, Map<Integer, Double>> result = new HashMap<>();
+
+		if(usernames.isEmpty()){
+			return result;
+		}
+
+		StringBuilder query = new StringBuilder(
+				"SELECT username, movieid, rating FROM ratesmovie WHERE username IN ("
+		);
+
+		query.append("?,".repeat(usernames.size()));
+		query.setLength(query.length() - 1);
+		query.append(")");
+
+		try(Connection connection = DatabaseConnection.getConnection()){
+			PreparedStatement statement = connection.prepareStatement(query.toString());
+
+			int i = 1;
+			for(String user : usernames){
+				statement.setString(i++, user);
+			}
+
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				String user = rs.getString("username");
+				int movieId = rs.getInt("movieid");
+				double rating = rs.getDouble("rating");
+
+				result.putIfAbsent(user, new HashMap<>());
+				result.get(user).put(movieId, rating);
+			}
+
+		} catch(SQLException e){
+			System.out.println("getUserRatings");
+			e.printStackTrace();
+		}
+
+		return result;
+	}
+
+	public Map<String, Integer> getUserFavGenres(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+		SELECT g.genretitle, COUNT(*) as counter
+		FROM ratesmovie r
+		JOIN isgenre ig ON r.movieid = ig.movieid
+		JOIN genre g ON ig.genreid = g.genreid
+		WHERE r.username = ? AND r.rating >= 7
+		GROUP BY g.genretitle
+	""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("genretitle"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<String, Integer> getUserFavProducers(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+		SELECT c.name, COUNT(*) as counter
+		FROM ratesmovie r
+		JOIN produces p ON r.movieid = p.movieid
+		JOIN contributor c ON p.contributorid = c.contributorid
+		WHERE r.username = ? AND r.rating >= 7
+		GROUP BY c.name
+	""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("name"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<String, Integer> getUserFavActors(String username){
+		Map<String, Integer> map = new HashMap<>();
+
+		String query = """
+		SELECT c.name, COUNT(*) as counter
+		FROM ratesmovie r
+		JOIN actsin a ON r.movieid = a.movieid
+		JOIN contributor c ON a.contributorid = c.contributorid
+		WHERE r.username = ? AND r.rating >= 7
+		GROUP BY c.name
+	""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getString("name"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<Integer, Integer> getUserFavDirectors(String username){
+		Map<Integer, Integer> map = new HashMap<>();
+
+		String query = """
+		SELECT m.contributorid AS director_id, COUNT(*) as counter
+		FROM ratesmovie r
+		JOIN movie m ON r.movieid = m.movieid
+		WHERE r.username = ? AND r.rating >= 7
+		GROUP BY m.contributorid
+	""";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				map.put(rs.getInt("director_id"), rs.getInt("counter"));
+			}
+
+		} catch (SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public List<Movie> getMovieDetailsBatch(List<Integer> movieIds){
+		if(movieIds == null || movieIds.isEmpty()){
+			return new ArrayList<>();
+		}
+
+		List<Movie> movies = new ArrayList<>();
+
+		String query = "SELECT * FROM movie WHERE movieid = ANY (?)";
+
+		try(Connection connection = DatabaseConnection.getConnection()){
+			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
+
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setArray(1, sqlArray);
+
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				movies.add(new Movie(
+						rs.getInt("movieid"),
+						rs.getString("title"),
+						Rating.fromString(rs.getString("mpaarating")),
+						rs.getInt("length"),
+						rs.getInt("contributorid"),
+						new ArrayList<>(),
+						new ArrayList<>(),
+						new ArrayList<>(),
+						new ArrayList<>()
+				));
+			}
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return movies;
+	}
+
+	public List<Integer> getCandidateMovieIDs(String username) {
+
+		List<Integer> ids = new ArrayList<>();
+
+		String query =
+				"SELECT movieid FROM movie " +
+						"WHERE movieid NOT IN (" +
+						"   SELECT movieid FROM ratesmovie WHERE username = ?" +
+						") LIMIT 2000";
+
+		try (Connection connection = DatabaseConnection.getConnection();
+			 PreparedStatement stmt = connection.prepareStatement(query)) {
+
+			stmt.setString(1, username);
+			ResultSet rs = stmt.executeQuery();
+
+			while (rs.next()) {
+				ids.add(rs.getInt("movieid"));
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return ids;
+	}
+
+	public Map<Integer, List<String>> getGenresForMovies(List<Integer> movieIds){
+		Map<Integer, List<String>> map = new HashMap<>();
+		if (movieIds.isEmpty()) return map;
+
+		String query = """
+			SELECT ig.movieid, g.genretitle
+			FROM isgenre ig
+			JOIN genre g ON ig.genreid = g.genreid
+			WHERE ig.movieid = ANY (?)
+		""";
+
+		try(Connection connection = DatabaseConnection.getConnection()){
+
+			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
+			PreparedStatement stmt = connection.prepareStatement(query);
+			stmt.setArray(1, sqlArray);
+
+			ResultSet rs = stmt.executeQuery();
+
+			while(rs.next()){
+				int id = rs.getInt("movieid");
+				String genre = rs.getString("genretitle");
+
+				map.putIfAbsent(id, new ArrayList<>());
+				map.get(id).add(genre);
+			}
+
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<Integer, List<String>> getActorsForMovies(List<Integer> movieIds){
+		Map<Integer, List<String>> map = new HashMap<>();
+		if (movieIds.isEmpty()) return map;
+
+		String query = """
+			SELECT a.movieid, c.name
+			FROM actsin a
+			JOIN contributor c ON a.contributorid = c.contributorid
+			WHERE a.movieid = ANY (?)
+		""";
+
+		try(Connection connection = DatabaseConnection.getConnection()){
+			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
+			PreparedStatement stmt = connection.prepareStatement(query);
+			stmt.setArray(1, sqlArray);
+
+			ResultSet rs = stmt.executeQuery();
+
+			while(rs.next()){
+				int id = rs.getInt("movieid");
+				String actor = rs.getString("name");
+
+				map.putIfAbsent(id, new ArrayList<>());
+				map.get(id).add(actor);
+			}
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<Integer, List<String>> getProducersForMovies(List<Integer> movieIds){
+		Map<Integer, List<String>> map = new HashMap<>();
+		if (movieIds.isEmpty()) return map;
+
+		String query = """
+			SELECT p.movieid, c.name
+			FROM produces p
+			JOIN contributor c ON p.contributorid = c.contributorid
+			WHERE p.movieid = ANY (?)
+		""";
+
+		try(Connection connection = DatabaseConnection.getConnection()){
+			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setArray(1, sqlArray);
+
+			ResultSet rs = statement.executeQuery();
+
+			while(rs.next()){
+				int id = rs.getInt("movieid");
+				String producer = rs.getString("name");
+
+				map.putIfAbsent(id, new ArrayList<>());
+				map.get(id).add(producer);
+			}
+
+		} catch (SQLException e) {
+			e.printStackTrace();
+		}
+
+		return map;
+	}
+
+	public Map<Integer, Integer> getAllMovieDirectors(){
+		Map<Integer, Integer> map = new HashMap<>();
+
+		String query = "SELECT movieid, contributorid FROM movie";
+
+		try(Connection connection = DatabaseConnection.getConnection();
+			 PreparedStatement statement = connection.prepareStatement(query);
+			 ResultSet rs = statement.executeQuery()) {
+
+			while(rs.next()){
+				map.put(rs.getInt("movieid"), rs.getInt("contributorid"));
+			}
+		} catch(SQLException e){
+			e.printStackTrace();
+		}
+
+		return map;
 	}
 }

@@ -1,5 +1,6 @@
 package com.example.p320_22.controllers;
 
+import com.example.p320_22.model.Movie;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -14,6 +15,9 @@ import org.springframework.http.ResponseEntity;
 import com.example.p320_22.model.User;
 import com.example.p320_22.model.UserProfile;
 import com.example.p320_22.persistence.UserDAO;
+import com.example.p320_22.service.RecommendationService;
+
+import java.util.List;
 
 import jakarta.servlet.http.HttpSession;
 
@@ -22,6 +26,7 @@ import jakarta.servlet.http.HttpSession;
 @RequestMapping("/users")
 public class UserController {
 	UserDAO userDAO;
+	private RecommendationService recommendationService = new RecommendationService();
 
 	public UserController() {
 		this.userDAO = new UserDAO();
@@ -135,5 +140,16 @@ public class UserController {
 		}
 
 		return ResponseEntity.status(HttpStatus.OK).build();
+	}
+
+	@GetMapping("/recommendations/{username}")
+	public ResponseEntity<?> getRecommendations(@PathVariable String username){
+		try{
+			List<Movie> recommended = recommendationService.recommendMovies(username);
+			return ResponseEntity.ok(recommended);
+		} catch (Exception e){
+			e.printStackTrace();
+			return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).build();
+		}
 	}
 }
