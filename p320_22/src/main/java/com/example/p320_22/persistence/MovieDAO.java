@@ -198,6 +198,30 @@ public class MovieDAO {
 		return movies;
 	}
 
+	public ArrayList<Movie> getMostPopularFollowing(String username) throws SQLException {
+		ArrayList<Movie> movies = new ArrayList();
+
+		//Get top 20 movies with highest watch count among the users that are being followed sort DESC
+		String query = "SELECT movieid FROM " +
+		"(SELECT wm.movieid FROM watchesmovie wm " +
+		"JOIN follows f ON wm.username = f.following_username " +
+		"WHERE f.follower_username = ? " +
+		"GROUP BY wm.movieid ORDER BY COUNT(*) DESC LIMIT 20)" +
+		"AS popular_following";
+
+		try (Connection connection = DatabaseConnection.getConnection()) {
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
+
+			while (rs.next()) {
+				Movie movie = getMovie(rs.getInt("movieid"));
+				movies.add(movie);
+			}
+		}
+		return movies;
+	}
+
 	public ArrayList<Movie> getNewReleasesOfMonth() throws SQLException {
 		ArrayList<Movie> movies = new ArrayList<>();
 
