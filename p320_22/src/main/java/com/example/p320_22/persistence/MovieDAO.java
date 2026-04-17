@@ -331,7 +331,7 @@ public class MovieDAO {
 		return movies;
 	}
 
-	public Map<Integer, Double> getAllUserRatings(String username) {
+	public Map<Integer, Double> getUserRatings(String username) {
 		Map<Integer, Double> ratings = new HashMap<>();
 
 		String query = "SELECT movieid, rating FROM ratesmovie WHERE username = ?";
@@ -346,14 +346,14 @@ public class MovieDAO {
 			}
 
 		} catch (SQLException e) {
-			System.out.println("getAllUserRatings");
+			System.out.println("getUserRatings");
 			e.printStackTrace();
 		}
 
 		return ratings;
 	}
 
-	public Map<String, Map<Integer, Double>> getUserRatings(Set<String> usernames){
+	public Map<String, Map<Integer, Double>> getMultipleUsersRatings(Set<String> usernames){
 		Map<String, Map<Integer, Double>> result = new HashMap<>();
 
 		if(usernames.isEmpty()){
@@ -388,7 +388,7 @@ public class MovieDAO {
 			}
 
 		} catch(SQLException e){
-			System.out.println("getUserRatings");
+			System.out.println("getMultipleUsersRatings");
 			e.printStackTrace();
 		}
 
@@ -399,13 +399,13 @@ public class MovieDAO {
 		Map<String, Integer> map = new HashMap<>();
 
 		String query = """
-		SELECT g.genretitle, COUNT(*) as counter
-		FROM ratesmovie r
-		JOIN isgenre ig ON r.movieid = ig.movieid
-		JOIN genre g ON ig.genreid = g.genreid
-		WHERE r.username = ? AND r.rating >= 7
-		GROUP BY g.genretitle
-	""";
+			SELECT g.genretitle, COUNT(*) as counter
+			FROM ratesmovie r
+			JOIN isgenre ig ON r.movieid = ig.movieid
+			JOIN genre g ON ig.genreid = g.genreid
+			WHERE r.username = ? AND r.rating >= 7
+			GROUP BY g.genretitle
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -427,13 +427,13 @@ public class MovieDAO {
 		Map<String, Integer> map = new HashMap<>();
 
 		String query = """
-		SELECT c.name, COUNT(*) as counter
-		FROM ratesmovie r
-		JOIN produces p ON r.movieid = p.movieid
-		JOIN contributor c ON p.contributorid = c.contributorid
-		WHERE r.username = ? AND r.rating >= 7
-		GROUP BY c.name
-	""";
+			SELECT c.name, COUNT(*) as counter
+			FROM ratesmovie r
+			JOIN produces p ON r.movieid = p.movieid
+			JOIN contributor c ON p.contributorid = c.contributorid
+			WHERE r.username = ? AND r.rating >= 7
+			GROUP BY c.name
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -455,13 +455,13 @@ public class MovieDAO {
 		Map<String, Integer> map = new HashMap<>();
 
 		String query = """
-		SELECT c.name, COUNT(*) as counter
-		FROM ratesmovie r
-		JOIN actsin a ON r.movieid = a.movieid
-		JOIN contributor c ON a.contributorid = c.contributorid
-		WHERE r.username = ? AND r.rating >= 7
-		GROUP BY c.name
-	""";
+			SELECT c.name, COUNT(*) as counter
+			FROM ratesmovie r
+			JOIN actsin a ON r.movieid = a.movieid
+			JOIN contributor c ON a.contributorid = c.contributorid
+			WHERE r.username = ? AND r.rating >= 7
+			GROUP BY c.name
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -483,12 +483,12 @@ public class MovieDAO {
 		Map<Integer, Integer> map = new HashMap<>();
 
 		String query = """
-		SELECT m.contributorid AS director_id, COUNT(*) as counter
-		FROM ratesmovie r
-		JOIN movie m ON r.movieid = m.movieid
-		WHERE r.username = ? AND r.rating >= 7
-		GROUP BY m.contributorid
-	""";
+			SELECT m.contributorid AS director_id, COUNT(*) as counter
+			FROM ratesmovie r
+			JOIN movie m ON r.movieid = m.movieid
+			WHERE r.username = ? AND r.rating >= 7
+			GROUP BY m.contributorid
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);
@@ -506,7 +506,7 @@ public class MovieDAO {
 		return map;
 	}
 
-	public List<Movie> getMovieDetailsBatch(List<Integer> movieIds){
+	public List<Movie> getMovieDetails(List<Integer> movieIds){
 		if(movieIds == null || movieIds.isEmpty()){
 			return new ArrayList<>();
 		}
@@ -544,21 +544,22 @@ public class MovieDAO {
 		return movies;
 	}
 
-	public List<Integer> getCandidateMovieIDs(String username) {
+	public List<Integer> getUnwatchedMovieIDs(String username) {
 
 		List<Integer> ids = new ArrayList<>();
 
-		String query =
-				"SELECT movieid FROM movie " +
-						"WHERE movieid NOT IN (" +
-						"   SELECT movieid FROM ratesmovie WHERE username = ?" +
-						") LIMIT 2000";
+		String query = """
+			SELECT movieid FROM movie
+			WHERE movieid NOT IN (
+			SELECT movieid FROM watchesmovie WHERE username = ?
+			)
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection();
-			 PreparedStatement stmt = connection.prepareStatement(query)) {
+			 PreparedStatement statement = connection.prepareStatement(query)){
 
-			stmt.setString(1, username);
-			ResultSet rs = stmt.executeQuery();
+			statement.setString(1, username);
+			ResultSet rs = statement.executeQuery();
 
 			while (rs.next()) {
 				ids.add(rs.getInt("movieid"));
@@ -585,10 +586,10 @@ public class MovieDAO {
 		try(Connection connection = DatabaseConnection.getConnection()){
 
 			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
-			PreparedStatement stmt = connection.prepareStatement(query);
-			stmt.setArray(1, sqlArray);
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setArray(1, sqlArray);
 
-			ResultSet rs = stmt.executeQuery();
+			ResultSet rs = statement.executeQuery();
 
 			while(rs.next()){
 				int id = rs.getInt("movieid");
@@ -618,10 +619,10 @@ public class MovieDAO {
 
 		try(Connection connection = DatabaseConnection.getConnection()){
 			java.sql.Array sqlArray = connection.createArrayOf("INTEGER", movieIds.toArray());
-			PreparedStatement stmt = connection.prepareStatement(query);
-			stmt.setArray(1, sqlArray);
+			PreparedStatement statement = connection.prepareStatement(query);
+			statement.setArray(1, sqlArray);
 
-			ResultSet rs = stmt.executeQuery();
+			ResultSet rs = statement.executeQuery();
 
 			while(rs.next()){
 				int id = rs.getInt("movieid");

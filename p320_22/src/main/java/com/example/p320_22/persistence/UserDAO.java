@@ -314,7 +314,7 @@ public class UserDAO {
 			GROUP BY r2.username
 			ORDER BY same_movies DESC, rating_diff ASC
 			LIMIT 50;
-				""";
+		""";
 
 		try (Connection connection = DatabaseConnection.getConnection()) {
 			PreparedStatement statement = connection.prepareStatement(query);

@@ -22,8 +22,8 @@ public class RecommendationService {
     }
 
     public List<Movie> recommendMovies(String username){
-        List<Integer> candidates = movieDAO.getCandidateMovieIDs(username);
-        if (candidates.isEmpty()){
+        List<Integer> unwatched = movieDAO.getUnwatchedMovieIDs(username);
+        if (unwatched.isEmpty()){
             return Collections.emptyList();
         }
 
@@ -31,20 +31,20 @@ public class RecommendationService {
         Map<String, Integer> actorFavs = movieDAO.getUserFavActors(username);
         Map<String, Integer> producerFavs = movieDAO.getUserFavProducers(username);
         Map<Integer, Integer> directorFavs = movieDAO.getUserFavDirectors(username);
-        Map<Integer, Double> userRatings = movieDAO.getAllUserRatings(username);
+        Map<Integer, Double> userRatings = movieDAO.getUserRatings(username);
 
         Map<String, Double> similarUsers = userDAO.getSimilarUsers(username);
-        Map<String, Map<Integer, Double>> similarRatings = similarUsers.isEmpty() ? new HashMap<>() : movieDAO.getUserRatings(similarUsers.keySet());
+        Map<String, Map<Integer, Double>> similarRatings = similarUsers.isEmpty() ? new HashMap<>() : movieDAO.getMultipleUsersRatings(similarUsers.keySet());
 
-        Map<Integer, List<String>> genres = movieDAO.getGenresForMovies(candidates);
-        Map<Integer, List<String>> actors = movieDAO.getActorsForMovies(candidates);
-        Map<Integer, List<String>> producers = movieDAO.getProducersForMovies(candidates);
+        Map<Integer, List<String>> genres = movieDAO.getGenresForMovies(unwatched);
+        Map<Integer, List<String>> actors = movieDAO.getActorsForMovies(unwatched);
+        Map<Integer, List<String>> producers = movieDAO.getProducersForMovies(unwatched);
         Map<Integer, Integer> directors = movieDAO.getAllMovieDirectors();
 
         Map<Integer, Double> userScores = new HashMap<>();
         Map<Integer, Double> similarUsersScores = new HashMap<>();
 
-        for(int id : candidates){
+        for(int id : unwatched){
             if(userRatings.containsKey(id)){
                 continue;
             }
@@ -93,7 +93,7 @@ public class RecommendationService {
                 .map(Map.Entry::getKey)
                 .toList();
 
-        return movieDAO.getMovieDetailsBatch(top);
+        return movieDAO.getMovieDetails(top);
     }
 
     private double calculateSimilarUserScore(int movieID, Map<String, Double> similarUsers, Map<String, Map<Integer, Double>> ratings){
